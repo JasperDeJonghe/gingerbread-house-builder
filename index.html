@@ -24,6 +24,9 @@
 :root { color-scheme: light }
 * { box-sizing: border-box }
 [hidden] { display: none !important }
+body[data-mode="laser"] .only-print, body:not([data-mode="laser"]) .only-laser { display: none !important }
+.bar .mode, .bar .lang { box-shadow: none; border: 1px solid var(--line); flex: none }
+.bar .lang button { padding: 6px 11px; font-size: 13px }
 html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5 }
 body { -webkit-font-smoothing: antialiased }
 .gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
@@ -136,27 +139,36 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
   <header class="bar gut">
     <div class="brand" aria-label="Gingerbread House Builder">
       <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3 3 14v15h26V14L16 3Zm-4 24v-8h8v8h-8Z"/><path fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" d="M7.5 14.5 16 7l8.5 7.5"/></svg>
-      <span>Gingerbread<span class="b2"> House Builder</span></span>
+      <span data-i18n="brand">Gingerbread<span class="b2"> House Builder</span></span>
+    </div>
+    <div class="seg mode" role="group" aria-label="Making method">
+      <button type="button" id="mPrint" aria-pressed="true" data-i18n="mPrint">3D print</button>
+      <button type="button" id="mLaser" aria-pressed="false" data-i18n="mLaser">Laser cut</button>
     </div>
     <div class="actions">
+      <div class="seg lang" role="group" aria-label="Language">
+        <button type="button" id="lEn" aria-pressed="true">EN</button>
+        <button type="button" id="lNl" aria-pressed="false">NL</button>
+      </div>
       <span class="seed"><label for="seed">Seed</label><input id="seed" type="number" min="1" max="999999" step="1"></span>
-      <button class="ghost" id="btnVariant" type="button" title="Same settings, different details">New variation</button>
-      <button class="blue" id="btnSurprise" type="button">Surprise me</button>
+      <button class="ghost" id="btnVariant" type="button" title="Same settings, different details" data-i18n="variant" data-i18n-title="variantT">New variation</button>
+      <button class="blue" id="btnSurprise" type="button" data-i18n="surprise">Surprise me</button>
     </div>
   </header>
 
   <div class="work">
     <aside class="rail gut">
       <div class="hero">
-        <h1>Build your own gingerbread house</h1>
-        <p>Pick a building, tweak the dimensions and decorate it with icing. Every part comes out of the oven as STEP, STL, DXF and SVG, with tabs that slot together.</p>
+        <h1 data-i18n="h1">Build your own gingerbread house</h1>
+        <p class="only-print" data-i18n="introPrint">Pick a building, tweak the dimensions and decorate it with icing. Every part comes out of the oven as STEP, STL, DXF and SVG, with tabs that slot together.</p>
+        <p class="only-laser" data-i18n="introLaser">Pick a building and cut it from sheet material. The icing becomes an engraving, and you get SVG and DXF files ready for LightBurn, with tabs that slot together.</p>
         <div class="row">
-          <button class="cta" type="button" id="btnZip">Download everything (.zip)</button>
+          <button class="cta" type="button" id="btnZip" data-i18n="zip">Download everything (.zip)</button>
         </div>
         <div class="row">
-          <button class="link" type="button" id="btnLoad" title="Load a settings.json from an earlier download">Load settings</button>
+          <button class="link" type="button" id="btnLoad" title="Load a settings.json from an earlier download" data-i18n="load" data-i18n-title="loadT">Load settings</button>
           <input type="file" id="fileLoad" accept=".json,application/json" hidden>
-          <button class="link" type="button" id="btnSaveSet">Save settings</button>
+          <button class="link" type="button" id="btnSaveSet" data-i18n="saveSet">Save settings</button>
         </div>
       </div>
       <form class="ctls" id="rail" autocomplete="off"></form>
@@ -166,7 +178,7 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
       <div class="stage" id="stage">
         <div class="stagebar">
           <div class="seg" role="group" aria-label="View">
-            <button type="button" id="vAsm" aria-pressed="true">Assembled</button>
+            <button type="button" id="vAsm" aria-pressed="true" data-i18n="asm">Assembled</button>
             <button type="button" id="vPrint" aria-pressed="false">Print plate</button>
           </div>
           <span class="status" id="status">Baking&#x2026;</span>
@@ -176,13 +188,18 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
 
       <section class="tray">
         <div class="trayhead">
-          <h2>Parts</h2>
-          <span class="hint">One .zip per part with STEP, STL, DXF and SVG</span>
+          <h2 data-i18n="parts">Parts</h2>
+          <span class="hint only-print" data-i18n="hintPrint">One .zip per part with STEP, STL, DXF and SVG</span>
+          <span class="hint only-laser" data-i18n="hintLaser">One .zip per part with LightBurn SVG and DXF, plus STEP</span>
         </div>
         <div class="parts" id="parts"></div>
-        <div class="help">
-          <div><b>In Fusion:</b> Insert &#x2192; Insert DXF and choose <i>one sketch per layer</i>. Extrude layer PLATE by the plate thickness and layer ICING by the icing height on top. The STEP files are ready-made solids with plate and icing as separate bodies.</div>
-          <div><b>Printing:</b> <span class="val">print_plate.stl</span> in the zip lays everything flat on your print bed. Add a filament change at <span class="val" id="hintZ">1.8 mm</span> for white icing on brown gingerbread.</div>
+        <div class="help only-laser">
+          <div data-i18n="helpLB"><b>In LightBurn:</b> open <span class="val">laser_sheet.svg</span> (or the DXF) from the zip. Red lines import as a cut layer, black shapes as an engrave layer: set the red layer to Line (cut) and the black layer to Fill (engrave), and set your kerf offset on the cut layer.</div>
+          <div data-i18n="helpMat"><b>Material:</b> all parts are laid out on a bed of the width you set, for the sheet thickness you set. The tabs and slots are sized for that thickness, so measure your sheet. The chimney is left out because it is a solid block.</div>
+        </div>
+        <div class="help only-print">
+          <div data-i18n="helpFusion"><b>In Fusion:</b> Insert &#x2192; Insert DXF and choose <i>one sketch per layer</i>. Extrude layer PLATE by the plate thickness and layer ICING by the icing height on top. The STEP files are ready-made solids with plate and icing as separate bodies.</div>
+          <div data-i18n="helpPrint"><b>Printing:</b> <span class="val">print_plate.stl</span> in the zip lays everything flat on your print bed. Add a filament change at <span class="val" id="hintZ">1.8 mm</span> for white icing on brown gingerbread.</div>
         </div>
       </section>
     </main>
@@ -200,9 +217,14 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
 (function () {
   'use strict';
   const $ = id => document.getElementById(id);
+  // ---------------------------------------------------------------- language (English / Dutch)
+  let lang = 'en';
+  try { lang = localStorage.getItem('gb-lang') || ''; } catch (e) { lang = ''; }
+  if (lang !== 'en' && lang !== 'nl') lang = (navigator.language || '').toLowerCase().startsWith('nl') ? 'nl' : 'en';
+  const tr = (en, nl) => (lang === 'nl' ? nl : en);
   // display names for the (Dutch) internal option values; the values themselves stay the same so
   // older settings files keep loading
-  const NAMES = {
+  const NAMES_EN = {
     willekeurig: 'Random',
     zadel: 'Gable roof', trap: 'Stepped gable',
     recht: 'Plain door', boog: 'Arched door', dubbel: 'Double door', staldeur: 'Stable door',
@@ -216,65 +238,132 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
     ...GB.FIGURE_NAMES,
     lijn: 'Line', zigzag: 'Zigzag', schulp: 'Scallops', bakstenen: 'Bricks', sneeuwvlok: 'Snowflakes',
   };
-  const nm = v => NAMES[v] || v;
+  const NAMES_NL = {
+    willekeurig: 'Willekeurig',
+    zadel: 'Zadeldak', trap: 'Trapgevel',
+    recht: 'Rechte deur', boog: 'Boogdeur', dubbel: 'Dubbele deur', staldeur: 'Staldeur',
+    midden: 'Midden', links: 'Links', rechts: 'Rechts',
+    geen: 'Geen', achterdeur: 'Achterdeur', zijdeur: 'Zijdeur',
+    gemengd: 'Per muur anders', zelfde: 'Overal hetzelfde',
+    kruis: 'Kruisraam', ruitjes: 'Roederaam', rond: 'Rond', luiken: 'Met luiken', hart: 'Hartje',
+    schubben: 'Schubben', pannen: 'Dakpannen', stippen: 'Stippen', golf: 'Golfjes',
+    druppels: 'Druppels', ijspegels: 'IJspegels', bolletjes: 'Sneeuwbolletjes', ster: 'Sterretje', vierkant: 'Vierkant',
+    schuur: 'Schuurdeuren', klok: 'Klok', hooiluik: 'Hooiluik', planken: 'Planken',
+    kerstboom: 'Kerstboom', sneeuwpop: 'Sneeuwpop', peperkoekman: 'Peperkoekmannetje', zuurstok: 'Zuurstok', lantaarn: 'Lantaarn', hekje: 'Hekje',
+    lijn: 'Lijn', zigzag: 'Zigzag', schulp: 'Schulprand', bakstenen: 'Bakstenen', sneeuwvlok: 'Sneeuwvlokjes',
+  };
+  const nm = v => (lang === 'nl' ? NAMES_NL : NAMES_EN)[v] || v;
+  const TYPE_NL = { huis: 'Huisje', dwarshuis: 'Dwarshuis', kraam: 'Gl\u00fchweinkraam', toren: 'Torentje', schuur: 'Schuur', chalet: 'Chalet' };
+  const typeName = k => (lang === 'nl' ? TYPE_NL[k] : GB.TYPES[k].name);
+  // part names come from gen.js in English; Dutch names by their English name (a trailing number stays)
+  const PART_NL = {
+    'Front gable': 'Voorgevel', 'Back gable': 'Achtergevel', 'Left side wall': 'Zijmuur links', 'Right side wall': 'Zijmuur rechts',
+    'Left gable': 'Gevel links', 'Right gable': 'Gevel rechts', 'Back wall': 'Achtermuur', 'Front wall': 'Voormuur',
+    'Left roof': 'Dak links', 'Right roof': 'Dak rechts', 'Front roof': 'Dak voor', 'Back roof': 'Dak achter',
+    'Chimney': 'Schoorsteen', 'Counter': 'Toonbank', 'Sign': 'Uithangbord', 'Balcony': 'Balkon', 'Railing': 'Balustrade',
+    'Base plate': 'Bodemplaat', 'Christmas tree': 'Kerstboom', 'Snowman': 'Sneeuwpop', 'Gingerbread man': 'Peperkoekmannetje',
+    'Candy cane': 'Zuurstok', 'Street lamp': 'Lantaarn', 'Fence': 'Hekje',
+  };
+  const partName = n => {
+    if (lang !== 'nl') return n;
+    const m = /^(.*?)( \d+)?$/.exec(n);
+    return (PART_NL[m[1]] || m[1]) + (m[2] || '');
+  };
   const sel = (key, label, opts, extra) => Object.assign({ key, label, type: 'select', opts }, extra || {});
   const rng = (key, label, min, max, step, unit) => ({ key, label, type: 'range', min, max, step, unit });
   const chk = (key, label) => ({ key, label, type: 'check' });
   const txt = (key, label, max) => ({ key, label, type: 'text', max });
   const W = 'willekeurig';
-  const typeNames = Object.fromEntries(Object.entries(GB.TYPES).map(([k, v]) => [k, v.name]));
-  const GROUPS = [
-    ['Building', [
-      sel('type', 'Building type', Object.keys(GB.TYPES), { names: typeNames }),
-      sel('seller', 'Stall keeper', [W, 'peperkoekman', 'sneeuwpop', 'geen'], { only: ['kraam'] }),
-      chk('sign', 'Sign on the ridge'),
-      txt('signText', 'Sign text', 18),
-      chk('balcony', 'Balcony with railing (2+ floors)'),
+  const groups = () => [
+    [tr('Building', 'Gebouw'), [
+      sel('type', tr('Building type', 'Soort gebouw'), Object.keys(GB.TYPES), { names: Object.fromEntries(Object.keys(GB.TYPES).map(k => [k, typeName(k)])) }),
+      sel('seller', tr('Stall keeper', 'Verkoper in de kraam'), [W, 'peperkoekman', 'sneeuwpop', 'geen']),
+      chk('sign', tr('Sign on the ridge', 'Uithangbord op de nok')),
+      txt('signText', tr('Sign text', 'Tekst op het bord'), 18),
+      chk('balcony', tr('Balcony with railing (2+ floors)', 'Balkon met balustrade (vanaf 2 verdiepingen)')),
     ]],
-    ['Shape', [
-      sel('gable', 'Gable shape', [W, 'zadel', 'trap', 'klok'], { names: { klok: 'Bell gable' } }),
-      rng('W', 'Gable width', 28, 80, 1, 'mm'), rng('D', 'Length', 28, 90, 1, 'mm'), rng('H', 'Wall height', 20, 70, 1, 'mm'),
-      rng('pitch', 'Roof pitch', 25, 65, 5, '\u00b0'), rng('overhang', 'Roof overhang', 0, 8, 0.5, 'mm'),
-      sel('floors', 'Floors', [1, 2, 3], { num: true, names: { 1: '1 floor', 2: '2 floors', 3: '3 floors' } }),
+    [tr('Shape', 'Vorm'), [
+      sel('gable', tr('Gable shape', 'Gevelvorm'), [W, 'zadel', 'trap', 'klok'], { names: { klok: tr('Bell gable', 'Klokgevel') } }),
+      rng('W', tr('Gable width', 'Breedte gevel'), 28, 80, 1, 'mm'), rng('D', tr('Length', 'Lengte'), 28, 90, 1, 'mm'), rng('H', tr('Wall height', 'Muurhoogte'), 20, 70, 1, 'mm'),
+      rng('pitch', tr('Roof pitch', 'Dakhelling'), 25, 65, 5, '\u00b0'), rng('overhang', tr('Roof overhang', 'Overstek dak'), 0, 8, 0.5, 'mm'),
+      sel('floors', tr('Floors', 'Verdiepingen'), [1, 2, 3], { num: true, names: { 1: tr('1 floor', '1 verdieping'), 2: tr('2 floors', '2 verdiepingen'), 3: tr('3 floors', '3 verdiepingen') } }),
     ]],
-    ['Doors', [
-      sel('door', 'Front door', [W, 'recht', 'boog', 'dubbel', 'staldeur', 'schuur']),
-      sel('doorPos', 'Front door position', [W, 'midden', 'links', 'rechts']),
-      sel('extraDoor', 'Extra door', [W, 'geen', 'achterdeur', 'zijdeur']),
-      chk('cutDoorWindows', 'Cut out the small windows in doors'),
-      chk('cutDoor', 'Cut out whole doors'),
+    [tr('Doors', 'Deuren'), [
+      sel('door', tr('Front door', 'Voordeur'), [W, 'recht', 'boog', 'dubbel', 'staldeur', 'schuur']),
+      sel('doorPos', tr('Front door position', 'Plaats voordeur'), [W, 'midden', 'links', 'rechts']),
+      sel('extraDoor', tr('Extra door', 'Extra deur'), [W, 'geen', 'achterdeur', 'zijdeur']),
+      chk('cutDoorWindows', tr('Cut out the small windows in doors', 'Raampjes in de deuren uitsparen')),
+      chk('cutDoor', tr('Cut out whole doors', 'Hele deuren uitsparen')),
     ]],
-    ['Windows', [
-      sel('windowMix', 'Variety', ['gemengd', 'zelfde']),
-      sel('windowStyle', 'Window style', [W, 'kruis', 'ruitjes', 'boog', 'rond', 'luiken'], { names: { boog: 'Arched' } }),
-      sel('windowsPerWall', 'Windows per side wall', [0, 1, 2, 3, 4, 5], { num: true, names: { 0: 'Automatic' } }),
-      sel('topWindow', 'Window in the gable top', [W, 'rond', 'hart', 'ster', 'boog', 'klok', 'hooiluik', 'geen'], { names: { boog: 'Arched' } }),
-      sel('roofWindow', 'Roof window', [W, 'ster', 'rond', 'vierkant', 'geen']),
-      chk('cutWindows', 'Cut out windows (for a tea light)'),
+    [tr('Windows', 'Ramen'), [
+      sel('windowMix', tr('Variety', 'Variatie'), ['gemengd', 'zelfde']),
+      sel('windowStyle', tr('Window style', 'Raamstijl'), [W, 'kruis', 'ruitjes', 'boog', 'rond', 'luiken'], { names: { boog: tr('Arched', 'Boograam') } }),
+      sel('windowsPerWall', tr('Windows per side wall', 'Ramen per zijmuur'), [0, 1, 2, 3, 4, 5], { num: true, names: { 0: tr('Automatic', 'Automatisch') } }),
+      sel('topWindow', tr('Window in the gable top', 'Raampje in de top'), [W, 'rond', 'hart', 'ster', 'boog', 'klok', 'hooiluik', 'geen'], { names: { boog: tr('Arched', 'Boogje') } }),
+      sel('roofWindow', tr('Roof window', 'Dakraam'), [W, 'ster', 'rond', 'vierkant', 'geen']),
+      chk('cutWindows', tr('Cut out windows (for a tea light)', 'Ramen uitsparen (voor een lichtje)')),
     ]],
-    ['Icing', [
-      sel('roofPattern', 'Roof pattern', [W, 'schubben', 'pannen', 'stippen', 'golf', 'geen'], { names: { geen: 'Plain' } }),
-      sel('roofEdge', 'Snow edge at the eaves', [W, 'druppels', 'ijspegels', 'golf', 'bolletjes', 'geen'], { names: { golf: 'Wavy' } }),
-      rng('roofEdgeH', 'Snow edge height', 1.5, 5, 0.5, 'mm'),
-      sel('border', 'Border', [W, 'lijn', 'stippen', 'zigzag', 'golf', 'schulp']),
-      sel('gableDivider', 'Divider line on the gables', [W, 'golf', 'lijn', 'zigzag', 'stippen', 'schulp', 'geen']),
-      sel('wallPattern', 'Wall pattern', [W, 'geen', 'stippen', 'bakstenen', 'planken', 'sneeuwvlok']),
+    [tr('Icing', 'Glazuur'), [
+      sel('roofPattern', tr('Roof pattern', 'Dakpatroon'), [W, 'schubben', 'pannen', 'stippen', 'golf', 'geen'], { names: { geen: tr('Plain', 'Glad') } }),
+      sel('roofEdge', tr('Snow edge at the eaves', 'Sneeuwrand aan de dakgoot'), [W, 'druppels', 'ijspegels', 'golf', 'bolletjes', 'geen'], { names: { golf: tr('Wavy', 'Golvend') } }),
+      rng('roofEdgeH', tr('Snow edge height', 'Hoogte sneeuwrand'), 1.5, 5, 0.5, 'mm'),
+      sel('border', tr('Border', 'Randversiering'), [W, 'lijn', 'stippen', 'zigzag', 'golf', 'schulp']),
+      sel('gableDivider', tr('Divider line on the gables', 'Scheidingslijn op de gevels'), [W, 'golf', 'lijn', 'zigzag', 'stippen', 'schulp', 'geen']),
+      sel('wallPattern', tr('Wall pattern', 'Muurpatroon'), [W, 'geen', 'stippen', 'bakstenen', 'planken', 'sneeuwvlok']),
+      rng('lw', tr('Icing line width', 'Lijndikte glazuur'), 0.6, 1.6, 0.1, 'mm'),
     ]],
-    ['Garden', [
-      ...[1, 2, 3, 4].map(i => sel('fig' + i, 'Figure ' + i, ['geen', W, ...GB.FIGURES])),
-      chk('path', 'Garden path to the door'), chk('baseSnow', 'Snow on the base plate'),
-      chk('chimney', 'Chimney on the roof'),
-      sel('chimneyPattern', 'Chimney pattern', [W, 'bakstenen', 'stippen', 'golf', 'geen']),
+    [tr('Garden', 'Tuin'), [
+      ...[1, 2, 3, 4].map(i => sel('fig' + i, tr('Figure ', 'Figuur ') + i, ['geen', W, ...GB.FIGURES])),
+      chk('path', tr('Garden path to the door', 'Tuinpad naar de deur')), chk('baseSnow', tr('Snow on the base plate', 'Sneeuw op de bodemplaat')),
+      chk('chimney', tr('Chimney on the roof', 'Schoorsteen op het dak')),
+      sel('chimneyPattern', tr('Chimney pattern', 'Patroon schoorsteen'), [W, 'bakstenen', 'stippen', 'golf', 'geen']),
     ]],
-    ['Joints', [
-      chk('joints', 'Tabs and slots'),
-      rng('clear', 'Play per side', 0, 0.3, 0.05, 'mm'),
+    [tr('Joints', 'Verbindingen'), [
+      chk('joints', tr('Tabs and slots', 'Insteeknokken en sleuven')),
+      rng('clear', tr('Play per side', 'Speling per kant'), 0, 0.3, 0.05, 'mm'),
     ]],
-    ['Printing', [
-      rng('t', 'Plate thickness', 1.2, 3, 0.1, 'mm'), rng('ih', 'Icing height', 0.4, 1.2, 0.1, 'mm'),
-      rng('lw', 'Icing line width', 0.6, 1.6, 0.1, 'mm'), rng('bed', 'Print bed width', 150, 350, 10, 'mm'),
-    ]],
+    [tr('Printing', 'Printen'), [
+      rng('t', tr('Plate thickness', 'Plaatdikte'), 1.2, 3, 0.1, 'mm'), rng('ih', tr('Icing height', 'Glazuurhoogte'), 0.4, 1.2, 0.1, 'mm'),
+      rng('bed', tr('Print bed width', 'Breedte printbed'), 150, 350, 10, 'mm'),
+    ], 'print'],
+    [tr('Laser cutting', 'Lasersnijden'), [
+      rng('sheet', tr('Sheet thickness', 'Plaatdikte'), 1.5, 6, 0.1, 'mm'),
+      rng('laserBed', tr('Laser bed width', 'Breedte laserbed'), 150, 1000, 10, 'mm'),
+    ], 'laser'],
   ];
+  // static texts in the page (keyed by data-i18n); HTML allowed
+  const I18N = {
+    brand: ['Gingerbread<span class="b2"> House Builder</span>', 'Peperkoekhuis<span class="b2">-bouwer</span>'],
+    mPrint: ['3D print', '3D-printen'], mLaser: ['Laser cut', 'Lasersnijden'],
+    variant: ['New variation', 'Nieuwe variatie'], variantT: ['Same settings, different details', 'Zelfde instellingen, andere details'],
+    surprise: ['Surprise me', 'Verras me'],
+    h1: ['Build your own gingerbread house', 'Bouw je eigen peperkoekhuisje'],
+    introPrint: ['Pick a building, tweak the dimensions and decorate it with icing. Every part comes out of the oven as STEP, STL, DXF and SVG, with tabs that slot together.',
+      'Kies een gebouw, schuif aan de maten en versier met glazuur. Elk onderdeel komt als STEP, STL, DXF en SVG uit de oven, met passende insteeknokjes.'],
+    introLaser: ['Pick a building and cut it from sheet material. The icing becomes an engraving, and you get SVG and DXF files ready for LightBurn, with tabs that slot together.',
+      'Kies een gebouw en snij het uit plaatmateriaal. Het glazuur wordt gegraveerd, en je krijgt SVG- en DXF-bestanden klaar voor LightBurn, met passende insteeknokjes.'],
+    zip: ['Download everything (.zip)', 'Download alles (.zip)'],
+    load: ['Load settings', 'Instellingen laden'], loadT: ['Load a settings.json from an earlier download', 'Laad een settings.json uit een eerdere download'],
+    saveSet: ['Save settings', 'Instellingen opslaan'],
+    asm: ['Assembled', 'In elkaar'],
+    parts: ['Parts', 'Onderdelen'],
+    hintPrint: ['One .zip per part with STEP, STL, DXF and SVG', 'Per onderdeel een .zip met STEP, STL, DXF en SVG'],
+    hintLaser: ['One .zip per part with LightBurn SVG and DXF, plus STEP', 'Per onderdeel een .zip met LightBurn-SVG en -DXF, plus STEP'],
+    helpLB: ['<b>In LightBurn:</b> open <span class="val">laser_sheet.svg</span> (or the DXF) from the zip. Red lines import as a cut layer, black shapes as an engrave layer: set the red layer to Line (cut) and the black layer to Fill (engrave), and set your kerf offset on the cut layer.',
+      '<b>In LightBurn:</b> open <span class="val">laser_sheet.svg</span> (of de DXF) uit de zip. Rode lijnen worden een snijlaag, zwarte vlakken een graveerlaag: zet de rode laag op Line (snijden) en de zwarte laag op Fill (graveren), en stel je kerf-offset in op de snijlaag.'],
+    helpMat: ['<b>Material:</b> all parts are laid out on a bed of the width you set, for the sheet thickness you set. The tabs and slots are sized for that thickness, so measure your sheet. The chimney is left out because it is a solid block.',
+      '<b>Materiaal:</b> alle onderdelen liggen op een bed van de breedte die je instelt, voor de plaatdikte die je instelt. De nokjes en sleuven zijn op die dikte gemaakt, dus meet je plaat na. De schoorsteen valt weg omdat het een massief blokje is.'],
+    helpFusion: ['<b>In Fusion:</b> Insert \u2192 Insert DXF and choose <i>one sketch per layer</i>. Extrude layer PLATE by the plate thickness and layer ICING by the icing height on top. The STEP files are ready-made solids with plate and icing as separate bodies.',
+      '<b>In Fusion:</b> Insert \u2192 Insert DXF en kies <i>one sketch per layer</i>. Extrudeer laag PLATE met de plaatdikte en laag ICING met de glazuurhoogte erbovenop. De STEP-bestanden zijn kant-en-klare solids met plaat en glazuur als aparte bodies.'],
+    helpPrint: ['<b>Printing:</b> <span class="val">print_plate.stl</span> in the zip lays everything flat on your print bed. Add a filament change at <span class="val" id="hintZ">1.8 mm</span> for white icing on brown gingerbread.',
+      '<b>Printen:</b> <span class="val">print_plate.stl</span> in de zip legt alles plat op je printbed. Wissel van filament op <span class="val" id="hintZ">1.8 mm</span> voor wit glazuur op bruine koek.'],
+  };
+  function applyStatic() {
+    document.documentElement.lang = lang;
+    document.title = tr('Gingerbread House Builder', 'Peperkoekhuis-bouwer');
+    for (const el of document.querySelectorAll('[data-i18n]')) el.innerHTML = I18N[el.dataset.i18n][lang === 'nl' ? 1 : 0];
+    for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = I18N[el.dataset.i18nTitle][lang === 'nl' ? 1 : 0];
+  }
   const RES_KEY = { gable: 'gable', door: 'door', doorPos: 'doorPos', extraDoor: 'extraDoor', windowStyle: 'windowStyle', topWindow: 'topWindow', roofPattern: 'roofPattern', roofEdge: 'roofEdge', roofWindow: 'roofWindow', gableDivider: 'gableDivider', chimneyPattern: 'chimneyPattern', border: 'border', wallPattern: 'wallPattern' };
 
   // ---------------------------------------------------------------- state
@@ -284,8 +373,12 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
 
   // ---------------------------------------------------------------- controls
   const rail = $('rail'), ctlEls = {};
-  for (const [title, ctls] of GROUPS) {
+  // (re)build the settings column in the current language
+  function buildRail() {
+  rail.innerHTML = ''; for (const k in ctlEls) delete ctlEls[k];
+  for (const [title, ctls, onlyMode] of groups()) {
     const fs = document.createElement('fieldset');
+    if (onlyMode) fs.className = 'only-' + onlyMode;     // shown only in 3D-print or laser mode
     const lg = document.createElement('legend'); lg.textContent = title; fs.appendChild(lg);
     for (const c of ctls) {
       const wrap = document.createElement('div');
@@ -311,6 +404,8 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
     }
     rail.appendChild(fs);
   }
+  }
+  buildRail();
   rail.addEventListener('submit', e => e.preventDefault());
   rail.addEventListener('input', e => {
     const key = e.target.id.replace(/^c_/, '');
@@ -333,6 +428,23 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
       if (c.type === 'range') $('c_' + key + '_o').textContent = fmt(params[key], c.step) + (c.unit ? ' ' + c.unit : '');
     }
     $('seed').value = params.seed;
+    syncMode();
+  }
+  // ---------------------------------------------------------------- 3D print / laser cut switch
+  const isLaser = () => params.mode === 'laser';
+  function syncMode() {
+    const laser = isLaser();
+    document.body.dataset.mode = laser ? 'laser' : 'print';
+    $('mPrint').setAttribute('aria-pressed', String(!laser));
+    $('mLaser').setAttribute('aria-pressed', String(laser));
+    $('vPrint').textContent = laser ? tr('Laser sheet', 'Laserplaat') : tr('Print plate', 'Printplaat');
+    if (ctlEls.chimney) for (const k of ['chimney', 'chimneyPattern']) ctlEls[k].wrap.hidden = laser;
+  }
+  for (const [id, mode] of [['mPrint', 'print'], ['mLaser', 'laser']]) {
+    $(id).addEventListener('click', () => {
+      if (params.mode === mode) return;
+      params.mode = mode; syncMode(); rebuild(true);
+    });
   }
   function syncHints() {
     const r = house ? house.resolved : {};
@@ -340,7 +452,7 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
       const h = $('c_' + key + '_h');
       if (!h) continue;
       h.innerHTML = '';
-      if (params[key] === 'willekeurig' && r[RES_KEY[key]]) { h.append('Chosen: '); const b = document.createElement('b'); b.textContent = nm(r[RES_KEY[key]]); h.appendChild(b); }
+      if (params[key] === 'willekeurig' && r[RES_KEY[key]]) { h.append(tr('Chosen: ', 'Gekozen: ')); const b = document.createElement('b'); b.textContent = nm(r[RES_KEY[key]]); h.appendChild(b); }
     }
     // figure hints: resolved list skips the empty slots, so walk them in order
     let fi = 0;
@@ -349,20 +461,20 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
       h.innerHTML = '';
       if (v === 'geen') continue;
       const got = r.figures && r.figures[fi++];
-      if (v === 'willekeurig' && got) { h.append('Chosen: '); const b = document.createElement('b'); b.textContent = nm(got); h.appendChild(b); }
+      if (v === 'willekeurig' && got) { h.append(tr('Chosen: ', 'Gekozen: ')); const b = document.createElement('b'); b.textContent = nm(got); h.appendChild(b); }
     }
     // type-specific controls only show where they apply
     const isKraam = params.type === 'kraam', sideType = params.type === 'kraam' || params.type === 'dwarshuis';
     for (const k of ['seller', 'sign', 'signText']) ctlEls[k].wrap.hidden = !isKraam;
     ctlEls.balcony.wrap.hidden = sideType;
-    if (r.seller && params.seller === 'willekeurig') { const h = $('c_seller_h'); h.innerHTML = ''; h.append('Chosen: '); const b = document.createElement('b'); b.textContent = nm(r.seller); h.appendChild(b); }
+    if (r.seller && params.seller === 'willekeurig') { const h = $('c_seller_h'); h.innerHTML = ''; h.append(tr('Chosen: ', 'Gekozen: ')); const b = document.createElement('b'); b.textContent = nm(r.seller); h.appendChild(b); }
     const ws = ctlEls.windowStyle.wrap;
     ws.style.opacity = params.windowMix === 'gemengd' ? '0.5' : '';
-    $('c_windowStyle_h').textContent = params.windowMix === 'gemengd' ? 'Each wall gets its own window style.' : $('c_windowStyle_h').textContent;
+    $('c_windowStyle_h').textContent = params.windowMix === 'gemengd' ? tr('Each wall gets its own window style.', 'Elke muur krijgt een eigen raamstijl.') : $('c_windowStyle_h').textContent;
   }
 
   $('btnSurprise').addEventListener('click', () => {
-    const keep = { t: params.t, ih: params.ih, lw: params.lw, bed: params.bed, joints: params.joints, clear: params.clear, type: params.type, signText: params.signText };
+    const keep = { t: params.t, ih: params.ih, lw: params.lw, bed: params.bed, joints: params.joints, clear: params.clear, type: params.type, signText: params.signText, mode: params.mode, sheet: params.sheet, laserBed: params.laserBed };
     params = GB.randomParams(1 + Math.floor(Math.random() * 999998), keep);
     syncControls(); rebuild(true);
   });
@@ -385,6 +497,7 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
   const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const matPlate = new THREE.MeshStandardMaterial({ color: 0xb8692e, roughness: 0.82, metalness: 0 });
   const matIcing = new THREE.MeshStandardMaterial({ color: 0xfbfaf7, roughness: 0.55, metalness: 0 });
+  const matBurnt = new THREE.MeshStandardMaterial({ color: 0x2e1a0c, roughness: 0.95, metalness: 0 });
   let group = new THREE.Group(); scene.add(group);
   function resize() {
     const w = stage.clientWidth, h = stage.clientHeight;
@@ -397,11 +510,15 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
     scene.remove(group);
     group.traverse(o => { if (o.geometry) o.geometry.dispose(); });
     group = new THREE.Group();
-    const lay = view === 'print' ? GB.layout(house.parts, params.bed) : null;
+    // laser: light wood with dark engraving; 3D print: gingerbread with white icing
+    matPlate.color.set(isLaser() ? 0xb9875a : 0xb8692e);
+    matIcing.color.set(isLaser() ? 0x4a2a14 : 0xfbfaf7);
+    const lay = view === 'print' ? GB.layout(house.parts, isLaser() ? params.laserBed : params.bed) : null;
     for (const pt of house.parts) {
       const F = lay ? lay.frames[pt.id] : pt.place;
-      const m = GB.meshPart(pt, F);
-      for (const [arr, mat] of [[m.plaat, matPlate], [m.glazuur, matIcing]]) {
+      // laser: the cut edges come out scorched, so the plate's side walls get their own dark material
+      const m = GB.meshPart(pt, F, isLaser());
+      for (const [arr, mat] of [[m.plaat, matPlate], [m.glazuur, matIcing], [m.zijkant, matBurnt]]) {
         if (!arr.length) continue;
         const g = new THREE.BufferGeometry();
         g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
@@ -430,35 +547,35 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
   let timer = null;
   function schedule() { clearTimeout(timer); timer = setTimeout(() => rebuild(false), 180); }
   function rebuild(resetCam) {
-    $('status').textContent = 'Baking\u2026';
+    $('status').textContent = tr('Baking\u2026', 'Bezig met bakken\u2026');
     setTimeout(() => {
       const t0 = performance.now();
       try {
         house = GB.build(params);
       } catch (e) {
         console.error(e);
-        $('status').textContent = 'This combination does not work. Try another seed or size.';
+        $('status').textContent = tr('This combination does not work. Try another seed or size.', 'Deze combinatie lukt niet. Probeer een andere seed of maat.');
         return;
       }
       showHouse(resetCam || firstFrame);
       firstFrame = false;
       renderParts(); renderChips(); syncHints();
       $('hintZ').textContent = fmt(params.t, 0.1) + ' mm';
-      $('status').textContent = `${house.parts.length} parts \u00b7 ${Math.round(performance.now() - t0)} ms`;
+      $('status').textContent = `${house.parts.length} ${tr('parts', 'onderdelen')} \u00b7 ${Math.round(performance.now() - t0)} ms`;
     }, 20);
   }
   function renderChips() {
     const r = house.resolved, d = house.dims, el = $('chips');
     el.innerHTML = '';
     const add = (k, v) => { const s = document.createElement('span'); s.className = 'chip'; const i = document.createElement('i'); i.textContent = k; s.append(i, v); el.appendChild(s); };
-    add('building', GB.TYPES[r.type].name);
-    add('gable', r.gable === 'klok' ? 'Bell gable' : nm(r.gable)); add('door', nm(r.door) + ' \u00b7 ' + nm(r.doorPos).toLowerCase());
+    add(tr('building', 'gebouw'), typeName(r.type));
+    add(tr('gable', 'gevel'), r.gable === 'klok' ? tr('Bell gable', 'Klokgevel') : nm(r.gable)); add(tr('door', 'deur'), nm(r.door) + ' \u00b7 ' + nm(r.doorPos).toLowerCase());
     if (r.extraDoor !== 'geen') add('extra', nm(r.extraDoor));
-    add('roof', r.roofPattern === 'geen' ? 'Plain' : nm(r.roofPattern));
-    add('eaves', r.roofEdge === 'golf' ? 'Wavy' : nm(r.roofEdge));
-    add('border', nm(r.border));
-    add('size', `${d.Fx} \u00d7 ${d.Fy} \u00d7 ${Math.round(d.Hp + params.t)} mm`);
-    add('base', `${Math.round(d.Bw)} \u00d7 ${Math.round(d.Bd)} mm`);
+    add(tr('roof', 'dak'), r.roofPattern === 'geen' ? tr('Plain', 'Glad') : nm(r.roofPattern));
+    add(tr('eaves', 'goot'), r.roofEdge === 'golf' ? tr('Wavy', 'Golvend') : nm(r.roofEdge));
+    add(tr('border', 'rand'), nm(r.border));
+    add(tr('size', 'maat'), `${d.Fx} \u00d7 ${d.Fy} \u00d7 ${Math.round(d.Hp + params.t)} mm`);
+    add(tr('base', 'bodem'), `${Math.round(d.Bw)} \u00d7 ${Math.round(d.Bd)} mm`);
   }
   const svgColors = () => ({ plaat: cssVar('--ginger') || '#b8692e', glazuur: '#ffffff', rand: '#6b3a17' });
   function renderParts() {
@@ -466,17 +583,18 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
     el.innerHTML = '';
     for (const pt of house.parts) {
       const card = document.createElement('div'); card.className = 'part';
-      const th = document.createElement('div'); th.className = 'thumb'; th.innerHTML = GB.toSVG(pt, svgColors());
-      const sv = th.querySelector('svg'); sv.removeAttribute('width'); sv.removeAttribute('height'); sv.setAttribute('role', 'img'); sv.setAttribute('aria-label', pt.name);
-      const h = document.createElement('h3'); h.textContent = pt.name;
+      const th = document.createElement('div'); th.className = 'thumb';
+      th.innerHTML = GB.toSVG(pt, isLaser() ? { plaat: '#b9875a', glazuur: '#4a2a14', rand: '#2e1a0c' } : svgColors());
+      const sv = th.querySelector('svg'); sv.removeAttribute('width'); sv.removeAttribute('height'); sv.setAttribute('role', 'img'); sv.setAttribute('aria-label', partName(pt.name));
+      const h = document.createElement('h3'); h.textContent = partName(pt.name);
       const b = pt.bbox, dm = document.createElement('div'); dm.className = 'dims';
       dm.textContent = `${(b[2] - b[0]).toFixed(1)} \u00d7 ${(b[3] - b[1]).toFixed(1)} mm`;
       const btns = document.createElement('div'); btns.className = 'btns';
       const bz = document.createElement('button'); bz.type = 'button'; bz.className = 'small'; bz.textContent = '.zip';
-      bz.title = 'STEP, STL, DXF and SVG of this part';
+      bz.title = isLaser() ? tr('LightBurn SVG and DXF plus STEP of this part', 'LightBurn-SVG en -DXF plus STEP van dit onderdeel') : tr('STEP, STL, DXF and SVG of this part', 'STEP, STL, DXF en SVG van dit onderdeel');
       bz.addEventListener('click', () => zipPart(pt));
       const bs = document.createElement('button'); bs.type = 'button'; bs.className = 'small'; bs.textContent = '.svg';
-      bs.addEventListener('click', () => save(pt.id + '.svg', GB.toSVG(pt)));
+      bs.addEventListener('click', () => save(pt.id + '.svg', isLaser() ? GB.laserSVG([{ part: pt, dx: 0, dy: 0 }]) : GB.toSVG(pt)));
       btns.append(bz, bs);
       card.append(th, h, dm, btns);
       el.appendChild(card);
@@ -491,21 +609,47 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
   function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2600); }
   async function save(filename, data) {
     if (downloads) {
-      try { await downloads.save({ filename, data }); toast('Saved: ' + filename); }
+      try { await downloads.save({ filename, data }); toast(tr('Saved: ', 'Opgeslagen: ') + filename); }
       catch (e) {
         const code = e && e.code;
-        if (code === 'declined') toast('Download cancelled');
-        else if (code === 'rate_limited') toast('A download is already waiting for confirmation');
-        else toast('Saving does not work here. Open the page in claude.ai.');
+        if (code === 'declined') toast(tr('Download cancelled', 'Download geannuleerd'));
+        else if (code === 'rate_limited') toast(tr('A download is already waiting for confirmation', 'Er staat al een download klaar om te bevestigen'));
+        else toast(tr('Saving does not work here. Open the page in claude.ai.', 'Opslaan lukt hier niet. Open de pagina in claude.ai.'));
       }
       return;
     }
-    if (window.claude) { toast('Downloads are not available in this view.'); return; }
+    if (window.claude) { toast(tr('Downloads are not available in this view.', 'Downloads zijn in deze weergave niet beschikbaar.')); return; }
     const blob = data instanceof Blob ? data : new Blob([data]);
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   }
-  const README = () => [
+  const README_LASER = () => [
+    'GINGERBREAD HOUSE (LASER CUT) - made with the Gingerbread House Builder',
+    '',
+    `Seed ${params.seed}. Sizes in millimetres. Sheet thickness ${params.sheet} mm, laser bed width ${params.laserBed} mm.`,
+    '',
+    'FILES',
+    '  laser_sheet.svg  All parts on one sheet for LightBurn: red hairlines = cut, black shapes = engrave.',
+    '  laser_sheet.dxf  The same sheet as DXF: layer CUT (red, colour 1) and layer ENGRAVE (black, colour 7).',
+    '  svg/ dxf/        Every part on its own, in the same format.',
+    '  step/            Every part as a solid (plate thickness = sheet thickness; engraving as a thin body on top).',
+    '  assembled.stl    The building put together, to look at.',
+    '  settings.json    All settings. Load this file in the builder with "Load settings" to get the same building back.',
+    '',
+    'IN LIGHTBURN',
+    '  1. File > Import (or drag in) laser_sheet.svg. LightBurn makes one layer per colour.',
+    '  2. Red layer: mode Line, your cutting speed and power. Turn on Kerf offset for a snug fit.',
+    '  3. Black layer: mode Fill, your engraving speed and power. Engrave first, cut last.',
+    '  4. Check the size is unchanged (the files are in millimetres) and run a test fit on scrap first.',
+    '',
+    'JOINTS',
+    params.joints
+      ? `  Tabs and slots are sized for ${params.sheet} mm sheet with ${params.clear} mm play per side. Measure your sheet: if it is thicker or thinner, change "Sheet thickness" and download again.`
+      : '  Switched off: glue the parts together.',
+    '  The chimney is left out in laser mode (it is a solid block). The roof halves meet at the ridge with a small V gap.',
+    '',
+  ].join('\r\n');
+  const README = () => isLaser() ? README_LASER() : [
     'GINGERBREAD HOUSE - made with the Gingerbread House Builder',
     '',
     `Seed ${params.seed}. Sizes in millimetres. Plate thickness ${params.t} mm, icing ${params.ih} mm high, line width ${params.lw} mm.`,
@@ -532,7 +676,67 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
     '  The roof plates are bevelled at the ridge so the two halves meet neatly.',
     '',
   ].join('\r\n');
+  // Dutch README (the English one is README / README_LASER)
+  const README_NL = () => isLaser() ? [
+    'PEPERKOEKHUIS (LASERSNIJDEN) - gemaakt met de Peperkoekhuis-bouwer',
+    '',
+    `Seed ${params.seed}. Maten in millimeter. Plaatdikte ${params.sheet} mm, breedte laserbed ${params.laserBed} mm.`,
+    '',
+    'BESTANDEN',
+    '  laser_sheet.svg  Alle onderdelen op een plaat voor LightBurn: rode lijntjes = snijden, zwarte vlakken = graveren.',
+    '  laser_sheet.dxf  Dezelfde plaat als DXF: laag CUT (rood, kleur 1) en laag ENGRAVE (zwart, kleur 7).',
+    '  svg/ dxf/        Elk onderdeel apart, in hetzelfde formaat.',
+    '  step/            Elk onderdeel als solid (dikte = plaatdikte; de gravure als dun laagje erbovenop).',
+    '  assembled.stl    Het gebouw in elkaar gezet, om te bekijken.',
+    '  settings.json    Alle instellingen. Laad dit bestand met "Instellingen laden" voor precies hetzelfde gebouw.',
+    '',
+    'IN LIGHTBURN',
+    '  1. File > Import (of sleep erin) laser_sheet.svg. LightBurn maakt een laag per kleur.',
+    '  2. Rode laag: modus Line, je snijsnelheid en vermogen. Zet Kerf offset aan voor een strakke passing.',
+    '  3. Zwarte laag: modus Fill, je graveersnelheid en vermogen. Eerst graveren, dan snijden.',
+    '  4. Controleer dat de maat klopt (de bestanden zijn in millimeter) en test de passing eerst op een restje.',
+    '',
+    'VERBINDINGEN',
+    params.joints
+      ? `  Nokjes en sleuven zijn gemaakt voor ${params.sheet} mm plaat met ${params.clear} mm speling per kant. Meet je plaat: is die dikker of dunner, pas dan "Plaatdikte" aan en download opnieuw.`
+      : '  Uitgeschakeld: lijm de onderdelen aan elkaar.',
+    '  De schoorsteen valt weg bij lasersnijden (het is een massief blokje). De dakhelften sluiten aan de nok aan met een kleine V-groef.',
+    '',
+  ].join('\r\n') : [
+    'PEPERKOEKHUIS - gemaakt met de Peperkoekhuis-bouwer',
+    '',
+    `Seed ${params.seed}. Maten in millimeter. Plaatdikte ${params.t} mm, glazuur ${params.ih} mm hoog, lijndikte ${params.lw} mm.`,
+    '',
+    'MAPPEN',
+    '  step/  Solids met exacte vlakken. Plaat en glazuur zijn aparte bodies (in Fusion: Combine > Join om ze samen te voegen).',
+    '  stl/   Per onderdeel, klaar om te printen (plaat onder, glazuur boven).',
+    '  dxf/   2D-schetsen met laag PLATE en laag ICING. Fusion: Insert > Insert DXF, "one sketch per layer".',
+    '  svg/   Dezelfde tekening als SVG (ook handig voor Inkscape of een lasersnijder).',
+    '  print_plate.stl  Alle onderdelen plat naast elkaar.',
+    '  assembled.stl    Het gebouw in elkaar gezet, om te bekijken.',
+    '  settings.json    Alle instellingen. Laad dit bestand met "Instellingen laden" voor precies hetzelfde gebouw.',
+    '',
+    'VERBINDINGEN',
+    params.joints
+      ? `  Insteeknokken zoals de originele kit: nokken steken ${(params.t - 0.1).toFixed(1)} mm uit, sleuven zijn ${params.clear} mm per kant ruimer.`
+      : '  Uitgeschakeld: lijm de onderdelen met glazuur aan elkaar.',
+    '  Muren -> gevels, gevels -> bodemplaat, gevels -> dak (zadeldak) of dak -> gevels (trap- en klokgevel), tuinfiguren -> bodemplaat.',
+    '  Schoorsteen -> dak: de nok onder de schoorsteen gaat door een sleuf in het rechter dakvlak; daar zit geen glazuur.',
+    '  Bord -> dak (kraam): de pootjes gaan door uitsparingen in de nok, met extra speling (0,25 mm per kant).',
+    '',
+    'PRINTTIP',
+    `  Twee kleuren: wissel van filament op ${params.t} mm (bruin voor de koek, wit voor het glazuur).`,
+    '  De dakplaten hebben aan de nok een schuine kant zodat ze in het midden mooi aansluiten.',
+    '',
+  ].join('\r\n');
   function partFiles(z, pt, prefix) {
+    if (isLaser()) {
+      const one = [{ part: pt, dx: 0, dy: 0 }];
+      z.file((prefix ? 'svg/' : '') + pt.id + '.svg', GB.laserSVG(one));
+      z.file((prefix ? 'dxf/' : '') + pt.id + '.dxf', GB.laserDXF(one));
+      z.file((prefix ? 'step/' : '') + pt.id + '.step', GB.toSTEP(pt));
+      return;
+    }
     const m = GB.meshPart(pt);
     z.file((prefix ? 'step/' : '') + pt.id + '.step', GB.toSTEP(pt));
     z.file((prefix ? 'stl/' : '') + pt.id + '.stl', GB.toSTL([m.plaat, m.glazuur], pt.id));
@@ -572,9 +776,9 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
     if (!f) return;
     try {
       const n = applySettings(JSON.parse(await f.text()));
-      toast(`Settings loaded (${n} values, seed ${params.seed})`);
+      toast(tr(`Settings loaded (${n} values, seed ${params.seed})`, `Instellingen geladen (${n} waarden, seed ${params.seed})`));
     } catch (err) {
-      toast('This file could not be loaded: ' + (err && err.message ? err.message : 'invalid JSON'));
+      toast(tr('This file could not be loaded: ', 'Dit bestand kon niet geladen worden: ') + (err && err.message ? err.message : 'invalid JSON'));
     }
   });
   $('btnSaveSet').addEventListener('click', () => {
@@ -583,7 +787,7 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
 
   $('btnZip').addEventListener('click', async () => {
     if (!house) return;
-    const btn = $('btnZip'); btn.disabled = true; btn.textContent = 'Packing\u2026';
+    const btn = $('btnZip'); btn.disabled = true; btn.textContent = tr('Packing\u2026', 'Inpakken\u2026');
     try {
       const z = new JSZip(), lay = GB.layout(house.parts, params.bed), flat = [], asm = [];
       for (const pt of house.parts) {
@@ -591,12 +795,16 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
         const a = GB.meshPart(pt, lay.frames[pt.id]); flat.push(a.plaat, a.glazuur);
         const b = GB.meshPart(pt, pt.place); asm.push(b.plaat, b.glazuur);
       }
-      z.file('print_plate.stl', GB.toSTL(flat, 'print plate'));
+      if (isLaser()) {
+        const sheet = GB.laserSheet(house.parts, params.laserBed);
+        z.file('laser_sheet.svg', GB.laserSVG(sheet));
+        z.file('laser_sheet.dxf', GB.laserDXF(sheet));
+      } else z.file('print_plate.stl', GB.toSTL(flat, 'print plate'));
       z.file('assembled.stl', GB.toSTL(asm, 'assembled'));
       z.file('settings.json', JSON.stringify({ params, resolved: house.resolved }, (k, v) => (k === 'treeSpots' || k === 'roofSlotZone' ? undefined : v), 2));
-      z.file('README.txt', README());
-      await save(`gingerbread_${params.type}_${params.seed}.zip`, await z.generateAsync({ type: 'blob', compression: 'DEFLATE' }));
-    } finally { btn.disabled = false; btn.textContent = 'Download everything (.zip)'; }
+      z.file(lang === 'nl' ? 'LEESMIJ.txt' : 'README.txt', lang === 'nl' ? README_NL() : README());
+      await save(`gingerbread_${params.type}_${isLaser() ? 'laser_' : ''}${params.seed}.zip`, await z.generateAsync({ type: 'blob', compression: 'DEFLATE' }));
+    } finally { btn.disabled = false; btn.textContent = I18N.zip[lang === 'nl' ? 1 : 0]; }
   });
 
   // ---------------------------------------------------------------- sign text: script font -> outlines in mm
@@ -689,6 +897,24 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
   });
   // once the script font has arrived, redraw a stall so its sign uses it
   if (document.fonts && document.fonts.load) document.fonts.load(`40px ${SIGN_FONT}`).then(() => { if (params.type === 'kraam') rebuild(false); }).catch(() => {});
+
+  // ---------------------------------------------------------------- language switch
+  function syncLang() {
+    $('lEn').setAttribute('aria-pressed', String(lang === 'en'));
+    $('lNl').setAttribute('aria-pressed', String(lang === 'nl'));
+    applyStatic();
+  }
+  for (const [id, l] of [['lEn', 'en'], ['lNl', 'nl']]) {
+    $(id).addEventListener('click', () => {
+      if (lang === l) return;
+      lang = l;
+      try { localStorage.setItem('gb-lang', l); } catch (e) { /* remembered for this visit only */ }
+      syncLang(); buildRail(); syncControls();
+      if (house) { renderParts(); renderChips(); syncHints(); $('status').textContent = `${house.parts.length} ${tr('parts', 'onderdelen')}`; }
+      $('hintZ') && ($('hintZ').textContent = (isLaser() ? params.sheet : params.t).toFixed(1) + ' mm');
+    });
+  }
+  syncLang();
 
   syncControls();
   rebuild(true);

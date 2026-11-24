@@ -678,6 +678,7 @@
     roofPattern: 'willekeurig', roofEdge: 'willekeurig', roofEdgeH: 2.4, border: 'willekeurig', wallPattern: 'willekeurig',
     chimney: true, fig1: 'kerstboom', fig2: 'kerstboom', fig3: 'geen', fig4: 'geen', path: true, baseSnow: true,
     joints: true, clear: 0.1,   // per side, like the original kit (slot 0.2 mm larger than the tab)
+    mode: 'print', sheet: 3, laserBed: 300,
     type: 'huis', balcony: false, sign: true, signText: 'Gl\u00fchwein', seller: 'willekeurig',
     t: 1.8, ih: 0.6, lw: 0.8, bed: 220,
   };
@@ -810,7 +811,11 @@
     const side = T === 'dwarshuis' || T === 'kraam';
     res.type = T;
 
-    const { W, D, H, t, ih, lw } = P;
+    // laser mode: parts are cut from sheet material and the icing becomes an engraving
+    const laser = P.mode === 'laser';
+    const { W, D, H, lw } = P;
+    const t = laser ? +P.sheet : +P.t, ih = laser ? 0.05 : +P.ih;
+    res.mode = laser ? 'laser' : 'print';
     // icing islands must be printable: no specks (< 0.35 mm2) and no hair-thin slivers
     const cleanIcing = mp => cleanMP(mp, 0.4, lw * 0.45);
     const p = P.pitch * Math.PI / 180, tp = Math.tan(p);
@@ -1163,7 +1168,7 @@
     const ovD = J && !parapet ? Math.max(ov, slotGap) : ov;  // roof slot stays inside the roof's border
     const Lr = parapet ? D - 2 * t : D + 2 * ovD;
     const S = W / 2 / Math.cos(p) + ov;
-    const bev = t * tp;
+    const bev = laser ? 0 : t * tp;                  // a laser only cuts square edges: no ridge mitre
     const roofPat = rnd.int(1, 1e6), cp = Math.cos(p), sp = Math.sin(p);
     // sign on the ridge (market stall): legs go through notches in both roof halves at the ridge
     let sign = null;
@@ -1178,7 +1183,7 @@
     }
     // chimney dimensions first: the right roof gets its slot and a bare (icing-free) footprint
     let chim = null;
-    if (P.chimney) {
+    if (P.chimney && !laser) {                       // the chimney is a solid block: not cuttable from sheet
       const cw = Math.min(Math.max(W * 0.15, 6), 11), cd = cw * 0.9, Hc = cw * tp + rnd.range(6, 10);
       const xMin = (bandW + 1.8 + (sign ? sign.ridgeKeep : 0)) * cp + t * sp + 0.5;   // below the ridge border
       const x1 = Math.max((W / 2) * rnd.range(0.2, 0.45), xMin);
@@ -1536,17 +1541,20 @@
   }
   const flatOf = rings => rings.flat();
   // returns {plaat: number[], glazuur: number[]} flat xyz triangle lists
-  function meshPart(part, F) {
+  // splitSides: put the plate's side walls in out.zijkant (e.g. to show laser-burnt edges)
+  function meshPart(part, F, splitSides) {
     F = F || ID;
-    const out = { plaat: [], glazuur: [] };
+    const out = { plaat: [], glazuur: [], zijkant: [] };
     for (const b of part.bodies) {
-      const arr = out[b.role], T = q => apply(F, apply(b.M, q));
+      let arr = out[b.role];
+      const T = q => apply(F, apply(b.M, q));
       const push = (...v) => { for (const q of v) { const w = T(q); arr.push(w[0], w[1], w[2]); } };
       const top = b.top || b.poly, vb = flatOf(b.poly), vt = flatOf(top);
       for (const [a, bb, cc] of triangulate(b.poly)) {
         push([vt[a][0], vt[a][1], b.c1], [vt[bb][0], vt[bb][1], b.c1], [vt[cc][0], vt[cc][1], b.c1]);
         push([vb[a][0], vb[a][1], b.c0], [vb[cc][0], vb[cc][1], b.c0], [vb[bb][0], vb[bb][1], b.c0]);
       }
+      if (splitSides && b.role === 'plaat') arr = out.zijkant;
       b.poly.forEach((ring, ri) => {
         const tr = top[ri];
         for (let i = 0; i < ring.length; i++) {
@@ -1697,5 +1705,63 @@
       `<g id="icing"><path fill="${colors.glazuur}" fill-rule="evenodd" d="${svgPath(part.icing, y1 - 1)}"/></g></svg>`;
   }
 
-  return { DEFAULTS, CHOICES, FIGURES, FIGURE_NAMES, TYPES, setTextRenderer, randomParams, build, layout, meshPart, toSTL, toSTEP, toDXF, toSVG, apply, frame, ID };
+  // ------------------------------------------------------------------ laser cutting (LightBurn)
+  // items: [{ part, dx, dy }] placed in one drawing. Cut = every plate outline and opening (red hairline),
+  // engrave = the icing as filled shapes (black). LightBurn turns each colour into its own layer.
+  const LASER = { cut: '#FF0000', engrave: '#000000', cutACI: 1, engraveACI: 7 };
+  function laserBounds(items) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const { part, dx, dy } of items) for (const p of part.plate) for (const r of p) for (const q of r) {
+      x0 = Math.min(x0, q[0] + dx); y0 = Math.min(y0, q[1] + dy); x1 = Math.max(x1, q[0] + dx); y1 = Math.max(y1, q[1] + dy);
+    }
+    return { x0, y0, x1, y1 };
+  }
+  function laserSVG(items) {
+    const b = laserBounds(items), m = 2;
+    const W = b.x1 - b.x0 + 2 * m, H = b.y1 - b.y0 + 2 * m;
+    // coordinates in mm with the origin at the top-left (y down), matching width/height in mm
+    const X = x => (x - b.x0 + m).toFixed(3), Y = y => (b.y1 + m - y).toFixed(3);
+    const path = (mp, dx, dy) => {
+      let d = '';
+      for (const p of mp) for (const r of p) d += 'M' + r.map(q => X(q[0] + dx) + ' ' + Y(q[1] + dy)).join('L') + 'Z';
+      return d;
+    };
+    let cut = '', eng = '';
+    for (const { part, dx, dy } of items) {
+      eng += `<path id="${part.id}_engrave" d="${path(part.icing, dx, dy)}"/>`;
+      cut += `<path id="${part.id}_cut" d="${path(part.plate, dx, dy)}"/>`;
+    }
+    return `<?xml version="1.0" encoding="UTF-8"?>\n` +
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${W.toFixed(3)}mm" height="${H.toFixed(3)}mm" viewBox="0 0 ${W.toFixed(3)} ${H.toFixed(3)}">\n` +
+      `<g id="engrave" fill="${LASER.engrave}" fill-rule="evenodd" stroke="none">${eng}</g>\n` +
+      `<g id="cut" fill="none" stroke="${LASER.cut}" stroke-width="0.1">${cut}</g>\n</svg>\n`;
+  }
+  function laserDXF(items) {
+    const o = [], w = (c, v) => o.push(String(c), String(v));
+    w(0, 'SECTION'); w(2, 'HEADER'); w(9, '$ACADVER'); w(1, 'AC1009'); w(9, '$INSUNITS'); w(70, 4); w(0, 'ENDSEC');
+    w(0, 'SECTION'); w(2, 'TABLES'); w(0, 'TABLE'); w(2, 'LAYER'); w(70, 2);
+    for (const [n, col] of [['CUT', LASER.cutACI], ['ENGRAVE', LASER.engraveACI]]) { w(0, 'LAYER'); w(2, n); w(70, 0); w(62, col); w(6, 'CONTINUOUS'); }
+    w(0, 'ENDTAB'); w(0, 'ENDSEC');
+    w(0, 'SECTION'); w(2, 'ENTITIES');
+    // colour set on every entity too, so LightBurn sorts by colour even if it ignores layers
+    const poly = (layer, col, ring, dx, dy) => {
+      w(0, 'POLYLINE'); w(8, layer); w(62, col); w(66, 1); w(10, 0); w(20, 0); w(30, 0); w(70, 1);
+      for (const q of ring) { w(0, 'VERTEX'); w(8, layer); w(62, col); w(10, (q[0] + dx).toFixed(4)); w(20, (q[1] + dy).toFixed(4)); w(30, 0); }
+      w(0, 'SEQEND'); w(8, layer);
+    };
+    for (const { part, dx, dy } of items) {
+      for (const p of part.icing) for (const r of p) poly('ENGRAVE', LASER.engraveACI, r, dx, dy);
+      for (const p of part.plate) for (const r of p) poly('CUT', LASER.cutACI, r, dx, dy);
+    }
+    w(0, 'ENDSEC'); w(0, 'EOF');
+    return o.join('\n') + '\n';
+  }
+  // all parts laid out on a laser bed of width bedW (rows grow downwards)
+  function laserSheet(parts, bedW) {
+    const lay = layout(parts, bedW);
+    return parts.map(part => ({ part, dx: lay.frames[part.id].o[0], dy: lay.frames[part.id].o[1] }));
+  }
+
+  return { DEFAULTS, CHOICES, FIGURES, FIGURE_NAMES, TYPES, setTextRenderer, randomParams, build, layout, meshPart, toSTL, toSTEP, toDXF, toSVG,
+    laserSVG, laserDXF, laserSheet, apply, frame, ID };
 });

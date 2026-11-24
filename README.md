@@ -15,11 +15,24 @@ Each part is a flat plate (the gingerbread) with raised icing on top, so it prin
 - **Garden:** up to four figures (tree, snowman, gingerbread man, candy cane, street lamp, fence), a path, snow
 - **Joints:** tabs and slots with adjustable play (0.1 mm per side by default, 0.25 mm for the sign on the ridge)
 
-**Surprise me** rolls a whole new building and **New variation** keeps your settings but changes the details. The seed makes every design reproducible. **Save settings** / **Load settings** store a design as `settings.json`.
+The interface is available in English and Dutch (switch in the top bar). **Surprise me** rolls a whole new building and **New variation** keeps your settings but changes the details. The seed makes every design reproducible. **Save settings** / **Load settings** store a design as `settings.json`.
+
+## 3D print or laser cut
+
+The switch in the top bar picks how you'll make the house:
+
+- **3D print:** a gingerbread plate with raised icing, printed in two colours with one filament change.
+- **Laser cut:**
+  - Parts are cut from sheet material (thickness adjustable, 3 mm by default). The tabs and slots are sized for that sheet.
+  - The icing becomes an engraving.
+  - The roof halves meet square at the ridge, because a laser can't cut a bevel.
+  - The chimney is left out, because it's a solid block.
+  - The preview shows the wood with laser-burnt edges.
+  - The zip contains a LightBurn-ready `laser_sheet.svg` / `laser_sheet.dxf` with every part laid out on a bed of your chosen width. Red hairlines are cuts and black filled shapes are engravings. In the DXF these are layers `CUT` (colour 1) and `ENGRAVE` (colour 7). In LightBurn, set the red layer to Line with a kerf offset, and the black layer to Fill.
 
 ## Downloads
 
-**Download everything** gives one zip with:
+In 3D-print mode, **Download everything** gives one zip with:
 
 | Folder / file | Contents |
 |---|---|
