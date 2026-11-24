@@ -1,0 +1,13 @@
+{
+  "name": "gingerbread-house-builder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Design 3D-printable gingerbread houses and export STEP, STL, DXF and SVG.",
+  "scripts": {
+    "test": "node test/run.js test/out 12"
+  },
+  "devDependencies": {
+    "earcut": "2.2.4",
+    "polygon-clipping": "0.15.7"
+  }
+}

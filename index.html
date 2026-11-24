@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Design gingerbread houses with slot-together tabs and icing; download every part as STEP, STL, DXF and SVG.">
+<title>Gingerbread House Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Pacifico&display=swap">
+<style>
+/* App shell: top bar; left a soft-blue settings column that scrolls on its own; right the 3D stage that
+   always stays in view, with the parts list scrolling underneath it. Phones: stage sticks to the top. */
+:root {
+  --bg: #ffffff; --soft: #d3e2fb; --soft2: #f3f6fb; --card: #ffffff;
+  --ink: #000000; --muted: #3b3f47; --line: #dde2ea;
+  --accent: #116dff; --accent-ink: #ffffff; --cta: #0b0b0c; --cta-ink: #ffffff;
+  --ginger: #b8692e; --focus: #116dff; --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 8px 24px rgba(16, 24, 40, .06);
+  --f-display: "Inter Tight", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --bar: 64px;
+}
+/* always light, whatever the viewer's theme */
+:root { color-scheme: light }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5 }
+body { -webkit-font-smoothing: antialiased }
+.gut { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+
+/* ---- top bar */
+.bar { height: var(--bar); display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); background: var(--bg); position: relative; z-index: 5 }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 19px; letter-spacing: -0.02em; white-space: nowrap }
+.brand svg { width: 26px; height: 26px; color: var(--ginger); flex: none }
+.bar .actions { gap: 10px; flex-wrap: nowrap }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+
+/* ---- buttons: pills */
+button { white-space: nowrap; font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 9px 18px; font-weight: 600; transition: background-color .15s, border-color .15s, transform .15s }
+button:hover { border-color: var(--ink) }
+button:active { transform: translateY(1px) }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px }
+button.blue { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+button.blue:hover { filter: brightness(1.08) }
+button.cta { background: var(--cta); border-color: var(--cta); color: var(--cta-ink); padding: 13px 26px; font-size: 15px }
+button.cta:hover { filter: brightness(1.15) }
+button.ghost { border-color: transparent; background: transparent }
+button.ghost:hover { border-color: var(--line) }
+button.link { border: 0; background: none; padding: 4px 0; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--muted) }
+button.link:hover { text-decoration-color: var(--ink) }
+button.small { padding: 5px 12px; font-size: 12px; font-weight: 500 }
+button:disabled { opacity: .55; cursor: progress }
+.seed { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px }
+.seed input { width: 86px; font-family: var(--f-mono); font-size: 13px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink) }
+
+/* ---- workspace */
+.work { display: grid; grid-template-columns: 380px minmax(0, 1fr) }
+.rail { background: var(--soft); padding-block: 32px 48px; min-width: 0 }
+.hero h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(32px, 3.2vw, 42px); line-height: 1.12; letter-spacing: -0.025em; margin: 0 0 16px; text-wrap: balance }
+.hero p { margin: 0 0 22px; color: var(--muted); font-size: 15px; max-width: 34ch }
+.hero .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-bottom: 10px }
+form.ctls { display: grid; gap: 6px; margin-top: 26px }
+fieldset { border: 0; margin: 0; padding: 18px 0 10px; display: grid; gap: 12px; border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); min-width: 0 }
+legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; padding: 0; margin-bottom: 2px }
+.ctl { display: grid; gap: 6px }
+.ctl label { display: flex; justify-content: space-between; gap: 8px; font-weight: 500 }
+.ctl output, .val { font-family: var(--f-mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums }
+.ctl select, .ctl input[type=text] { font: inherit; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--ink); width: 100% }
+.ctl select { appearance: none; -webkit-appearance: none; padding-right: 36px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%237a8295' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center }
+.ctl input[type=range] { width: 100%; accent-color: var(--ink) }
+.ctl.check label { justify-content: flex-start; align-items: center; cursor: pointer; font-weight: 500 }
+.ctl.check input { accent-color: var(--ink); width: 18px; height: 18px; margin: 0 10px 0 0; flex: none }
+.hint { font-size: 12px; color: var(--muted) }
+.hint b { color: var(--ink); font-weight: 600 }
+
+/* ---- view: stage always visible, parts list scrolls below it */
+.view { display: grid; grid-template-rows: minmax(320px, 62%) minmax(0, 1fr); min-width: 0; padding-block: 20px 0; gap: 18px }
+.stage { position: relative; border-radius: 14px; overflow: hidden; background: radial-gradient(120% 100% at 50% 20%, #ffffff, var(--soft2)); border: 1px solid var(--line); min-height: 0 }
+.stage canvas { display: block; width: 100%; height: 100% }
+.stagebar { position: absolute; left: 16px; right: 16px; top: 16px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: flex-start; pointer-events: none }
+.stagebar > * { pointer-events: auto }
+.seg { display: inline-flex; background: var(--card); border-radius: 999px; padding: 4px; box-shadow: var(--shadow) }
+.seg button { border: 0; padding: 7px 16px; background: transparent; font-weight: 500 }
+.seg button[aria-pressed="true"] { background: var(--cta); color: var(--cta-ink); font-weight: 600 }
+.status { background: var(--card); border-radius: 999px; padding: 7px 14px; font-size: 12px; color: var(--muted); box-shadow: var(--shadow) }
+.chips { position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none }
+.chip { background: color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter: blur(6px); border-radius: 999px; padding: 5px 12px; font-size: 12px; box-shadow: var(--shadow) }
+.chip i { font-style: normal; color: var(--muted); margin-right: 5px }
+.tray { overflow-y: auto; overscroll-behavior: contain; padding-bottom: 32px; display: grid; gap: 18px; align-content: start; min-height: 0 }
+.trayhead { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between }
+.trayhead h2 { font-family: var(--f-display); font-weight: 600; font-size: 26px; letter-spacing: -0.02em; margin: 0 }
+.parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px }
+.part { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: grid; gap: 8px; align-content: start; transition: box-shadow .15s, transform .15s }
+.part:hover { box-shadow: var(--shadow); transform: translateY(-1px) }
+.thumb { height: 108px; display: grid; place-items: center; background: var(--soft2); border-radius: 10px; padding: 8px }
+.thumb svg { max-width: 100%; max-height: 92px; width: auto; height: auto }
+.part h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -0.01em }
+.part .dims { font-family: var(--f-mono); font-size: 11px; color: var(--muted) }
+.part .btns { display: flex; gap: 6px }
+.help { font-size: 13px; color: var(--muted); display: grid; gap: 8px; max-width: 80ch; padding-top: 6px }
+.help b { color: var(--ink) }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--cta); color: var(--cta-ink); padding: 11px 20px; border-radius: 999px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: calc(100% - 32px); box-shadow: var(--shadow); z-index: 20 }
+.toast.show { opacity: 1 }
+
+/* desktop: fixed app shell, the settings column and the parts list scroll independently */
+@media (min-width: 980px) {
+  body { overflow: hidden }
+  .app { height: 100%; display: grid; grid-template-rows: var(--bar) minmax(0, 1fr) }
+  .work { min-height: 0; height: 100%; grid-template-rows: minmax(0, 1fr) }
+  .rail { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-left: 32px; padding-right: 28px }
+  .view { height: 100%; padding-left: 24px; padding-right: max(24px, env(safe-area-inset-right, 0px)) }
+}
+/* phones and small tablets: one column, the stage sticks to the top while you scroll */
+@media (max-width: 979.98px) {
+  .work { grid-template-columns: minmax(0, 1fr) }
+  .view { display: contents }
+  .stage { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; height: 42vh; min-height: 260px; border-radius: 0 0 22px 22px; order: 1 }
+  .rail { order: 2 }
+  .tray { order: 3; overflow: visible; padding-top: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .brand .b2 { display: none }
+  .chips { display: none }                 /* on small screens the model needs the room */
+}
+@media (max-width: 560px) {
+  .bar .seed label, .bar #btnVariant { display: none }
+  .brand { font-size: 17px }
+  .seed input { width: 70px; padding: 7px 10px }
+  .bar button.blue { padding: 8px 14px }
+}
+@media (prefers-reduced-motion: reduce) { .toast, button, .part { transition: none } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar gut">
+    <div class="brand" aria-label="Gingerbread House Builder">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3 3 14v15h26V14L16 3Zm-4 24v-8h8v8h-8Z"/><path fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" d="M7.5 14.5 16 7l8.5 7.5"/></svg>
+      <span>Gingerbread<span class="b2"> House Builder</span></span>
+    </div>
+    <div class="actions">
+      <span class="seed"><label for="seed">Seed</label><input id="seed" type="number" min="1" max="999999" step="1"></span>
+      <button class="ghost" id="btnVariant" type="button" title="Same settings, different details">New variation</button>
+      <button class="blue" id="btnSurprise" type="button">Surprise me</button>
+    </div>
+  </header>
+
+  <div class="work">
+    <aside class="rail gut">
+      <div class="hero">
+        <h1>Build your own gingerbread house</h1>
+        <p>Pick a building, tweak the dimensions and decorate it with icing. Every part comes out of the oven as STEP, STL, DXF and SVG, with tabs that slot together.</p>
+        <div class="row">
+          <button class="cta" type="button" id="btnZip">Download everything (.zip)</button>
+        </div>
+        <div class="row">
+          <button class="link" type="button" id="btnLoad" title="Load a settings.json from an earlier download">Load settings</button>
+          <input type="file" id="fileLoad" accept=".json,application/json" hidden>
+          <button class="link" type="button" id="btnSaveSet">Save settings</button>
+        </div>
+      </div>
+      <form class="ctls" id="rail" autocomplete="off"></form>
+    </aside>
+
+    <main class="view">
+      <div class="stage" id="stage">
+        <div class="stagebar">
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" id="vAsm" aria-pressed="true">Assembled</button>
+            <button type="button" id="vPrint" aria-pressed="false">Print plate</button>
+          </div>
+          <span class="status" id="status">Baking&#x2026;</span>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <section class="tray">
+        <div class="trayhead">
+          <h2>Parts</h2>
+          <span class="hint">One .zip per part with STEP, STL, DXF and SVG</span>
+        </div>
+        <div class="parts" id="parts"></div>
+        <div class="help">
+          <div><b>In Fusion:</b> Insert &#x2192; Insert DXF and choose <i>one sketch per layer</i>. Extrude layer PLATE by the plate thickness and layer ICING by the icing height on top. The STEP files are ready-made solids with plate and icing as separate bodies.</div>
+          <div><b>Printing:</b> <span class="val">print_plate.stl</span> in the zip lays everything flat on your print bed. Add a filament change at <span class="val" id="hintZ">1.8 mm</span> for white icing on brown gingerbread.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/polygon-clipping@0.15.7/dist/polygon-clipping.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/earcut@2.2.4/dist/earcut.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="gen.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  // display names for the (Dutch) internal option values; the values themselves stay the same so
+  // older settings files keep loading
+  const NAMES = {
+    willekeurig: 'Random',
+    zadel: 'Gable roof', trap: 'Stepped gable',
+    recht: 'Plain door', boog: 'Arched door', dubbel: 'Double door', staldeur: 'Stable door',
+    midden: 'Centre', links: 'Left', rechts: 'Right',
+    geen: 'None', achterdeur: 'Back door', zijdeur: 'Side door',
+    gemengd: 'Different per wall', zelfde: 'Same everywhere',
+    kruis: 'Cross window', ruitjes: 'Grid window', rond: 'Round', luiken: 'With shutters', hart: 'Heart',
+    schubben: 'Scales', pannen: 'Roof tiles', stippen: 'Dots', golf: 'Waves',
+    druppels: 'Drips', ijspegels: 'Icicles', bolletjes: 'Snowballs', ster: 'Star', vierkant: 'Square',
+    schuur: 'Barn doors', klok: 'Clock', hooiluik: 'Hay hatch', planken: 'Boards',
+    ...GB.FIGURE_NAMES,
+    lijn: 'Line', zigzag: 'Zigzag', schulp: 'Scallops', bakstenen: 'Bricks', sneeuwvlok: 'Snowflakes',
+  };
+  const nm = v => NAMES[v] || v;
+  const sel = (key, label, opts, extra) => Object.assign({ key, label, type: 'select', opts }, extra || {});
+  const rng = (key, label, min, max, step, unit) => ({ key, label, type: 'range', min, max, step, unit });
+  const chk = (key, label) => ({ key, label, type: 'check' });
+  const txt = (key, label, max) => ({ key, label, type: 'text', max });
+  const W = 'willekeurig';
+  const typeNames = Object.fromEntries(Object.entries(GB.TYPES).map(([k, v]) => [k, v.name]));
+  const GROUPS = [
+    ['Building', [
+      sel('type', 'Building type', Object.keys(GB.TYPES), { names: typeNames }),
+      sel('seller', 'Stall keeper', [W, 'peperkoekman', 'sneeuwpop', 'geen'], { only: ['kraam'] }),
+      chk('sign', 'Sign on the ridge'),
+      txt('signText', 'Sign text', 18),
+      chk('balcony', 'Balcony with railing (2+ floors)'),
+    ]],
+    ['Shape', [
+      sel('gable', 'Gable shape', [W, 'zadel', 'trap', 'klok'], { names: { klok: 'Bell gable' } }),
+      rng('W', 'Gable width', 28, 80, 1, 'mm'), rng('D', 'Length', 28, 90, 1, 'mm'), rng('H', 'Wall height', 20, 70, 1, 'mm'),
+      rng('pitch', 'Roof pitch', 25, 65, 5, '\u00b0'), rng('overhang', 'Roof overhang', 0, 8, 0.5, 'mm'),
+      sel('floors', 'Floors', [1, 2, 3], { num: true, names: { 1: '1 floor', 2: '2 floors', 3: '3 floors' } }),
+    ]],
+    ['Doors', [
+      sel('door', 'Front door', [W, 'recht', 'boog', 'dubbel', 'staldeur', 'schuur']),
+      sel('doorPos', 'Front door position', [W, 'midden', 'links', 'rechts']),
+      sel('extraDoor', 'Extra door', [W, 'geen', 'achterdeur', 'zijdeur']),
+      chk('cutDoorWindows', 'Cut out the small windows in doors'),
+      chk('cutDoor', 'Cut out whole doors'),
+    ]],
+    ['Windows', [
+      sel('windowMix', 'Variety', ['gemengd', 'zelfde']),
+      sel('windowStyle', 'Window style', [W, 'kruis', 'ruitjes', 'boog', 'rond', 'luiken'], { names: { boog: 'Arched' } }),
+      sel('windowsPerWall', 'Windows per side wall', [0, 1, 2, 3, 4, 5], { num: true, names: { 0: 'Automatic' } }),
+      sel('topWindow', 'Window in the gable top', [W, 'rond', 'hart', 'ster', 'boog', 'klok', 'hooiluik', 'geen'], { names: { boog: 'Arched' } }),
+      sel('roofWindow', 'Roof window', [W, 'ster', 'rond', 'vierkant', 'geen']),
+      chk('cutWindows', 'Cut out windows (for a tea light)'),
+    ]],
+    ['Icing', [
+      sel('roofPattern', 'Roof pattern', [W, 'schubben', 'pannen', 'stippen', 'golf', 'geen'], { names: { geen: 'Plain' } }),
+      sel('roofEdge', 'Snow edge at the eaves', [W, 'druppels', 'ijspegels', 'golf', 'bolletjes', 'geen'], { names: { golf: 'Wavy' } }),
+      rng('roofEdgeH', 'Snow edge height', 1.5, 5, 0.5, 'mm'),
+      sel('border', 'Border', [W, 'lijn', 'stippen', 'zigzag', 'golf', 'schulp']),
+      sel('gableDivider', 'Divider line on the gables', [W, 'golf', 'lijn', 'zigzag', 'stippen', 'schulp', 'geen']),
+      sel('wallPattern', 'Wall pattern', [W, 'geen', 'stippen', 'bakstenen', 'planken', 'sneeuwvlok']),
+    ]],
+    ['Garden', [
+      ...[1, 2, 3, 4].map(i => sel('fig' + i, 'Figure ' + i, ['geen', W, ...GB.FIGURES])),
+      chk('path', 'Garden path to the door'), chk('baseSnow', 'Snow on the base plate'),
+      chk('chimney', 'Chimney on the roof'),
+      sel('chimneyPattern', 'Chimney pattern', [W, 'bakstenen', 'stippen', 'golf', 'geen']),
+    ]],
+    ['Joints', [
+      chk('joints', 'Tabs and slots'),
+      rng('clear', 'Play per side', 0, 0.3, 0.05, 'mm'),
+    ]],
+    ['Printing', [
+      rng('t', 'Plate thickness', 1.2, 3, 0.1, 'mm'), rng('ih', 'Icing height', 0.4, 1.2, 0.1, 'mm'),
+      rng('lw', 'Icing line width', 0.6, 1.6, 0.1, 'mm'), rng('bed', 'Print bed width', 150, 350, 10, 'mm'),
+    ]],
+  ];
+  const RES_KEY = { gable: 'gable', door: 'door', doorPos: 'doorPos', extraDoor: 'extraDoor', windowStyle: 'windowStyle', topWindow: 'topWindow', roofPattern: 'roofPattern', roofEdge: 'roofEdge', roofWindow: 'roofWindow', gableDivider: 'gableDivider', chimneyPattern: 'chimneyPattern', border: 'border', wallPattern: 'wallPattern' };
+
+  // ---------------------------------------------------------------- state
+  let params = Object.assign({}, GB.DEFAULTS);
+  let house = null, view = 'asm', firstFrame = true;
+  const fmt = (v, step) => (step < 1 ? Number(v).toFixed(step < 0.1 ? 2 : 1) : String(v));
+
+  // ---------------------------------------------------------------- controls
+  const rail = $('rail'), ctlEls = {};
+  for (const [title, ctls] of GROUPS) {
+    const fs = document.createElement('fieldset');
+    const lg = document.createElement('legend'); lg.textContent = title; fs.appendChild(lg);
+    for (const c of ctls) {
+      const wrap = document.createElement('div');
+      wrap.className = 'ctl' + (c.type === 'check' ? ' check' : '');
+      const id = 'c_' + c.key;
+      if (c.type === 'range') {
+        wrap.innerHTML = `<label for="${id}"><span></span><output id="${id}_o"></output></label><input type="range" id="${id}" min="${c.min}" max="${c.max}" step="${c.step}">`;
+        wrap.querySelector('span').textContent = c.label;
+      } else if (c.type === 'select') {
+        wrap.innerHTML = `<label for="${id}"><span></span></label><select id="${id}"></select><div class="hint" id="${id}_h"></div>`;
+        wrap.querySelector('span').textContent = c.label;
+        const s = wrap.querySelector('select');
+        for (const o of c.opts) { const op = document.createElement('option'); op.value = o; op.textContent = (c.names && c.names[o]) || nm(o); s.appendChild(op); }
+      } else if (c.type === 'text') {
+        wrap.innerHTML = `<label for="${id}"><span></span></label><input type="text" id="${id}" maxlength="${c.max || 20}" spellcheck="false">`;
+        wrap.querySelector('span').textContent = c.label;
+      } else {
+        wrap.innerHTML = `<label for="${id}"><input type="checkbox" id="${id}"><span></span></label>`;
+        wrap.querySelector('span').textContent = c.label;
+      }
+      fs.appendChild(wrap);
+      ctlEls[c.key] = { c, wrap };
+    }
+    rail.appendChild(fs);
+  }
+  rail.addEventListener('submit', e => e.preventDefault());
+  rail.addEventListener('input', e => {
+    const key = e.target.id.replace(/^c_/, '');
+    const ent = ctlEls[key];
+    if (!ent) return;
+    const c = ent.c, el = e.target;
+    params[key] = c.type === 'check' ? el.checked : c.type === 'range' ? Number(el.value) : (c.num ? Number(el.value) : el.value);
+    if (c.type === 'range') $('c_' + key + '_o').textContent = fmt(el.value, c.step) + (c.unit ? ' ' + c.unit : '');
+    if (key === 'type') {                       // a new building type starts from its own preset
+      Object.assign(params, GB.TYPES[params.type].preset);
+      syncControls(); rebuild(true); return;
+    }
+    schedule();
+  });
+  function syncControls() {
+    for (const key in ctlEls) {
+      const { c } = ctlEls[key], el = $('c_' + key);
+      if (c.type === 'check') el.checked = !!params[key];
+      else el.value = String(params[key]);
+      if (c.type === 'range') $('c_' + key + '_o').textContent = fmt(params[key], c.step) + (c.unit ? ' ' + c.unit : '');
+    }
+    $('seed').value = params.seed;
+  }
+  function syncHints() {
+    const r = house ? house.resolved : {};
+    for (const key in RES_KEY) {
+      const h = $('c_' + key + '_h');
+      if (!h) continue;
+      h.innerHTML = '';
+      if (params[key] === 'willekeurig' && r[RES_KEY[key]]) { h.append('Chosen: '); const b = document.createElement('b'); b.textContent = nm(r[RES_KEY[key]]); h.appendChild(b); }
+    }
+    // figure hints: resolved list skips the empty slots, so walk them in order
+    let fi = 0;
+    for (let i = 1; i <= 4; i++) {
+      const v = params['fig' + i], h = $('c_fig' + i + '_h');
+      h.innerHTML = '';
+      if (v === 'geen') continue;
+      const got = r.figures && r.figures[fi++];
+      if (v === 'willekeurig' && got) { h.append('Chosen: '); const b = document.createElement('b'); b.textContent = nm(got); h.appendChild(b); }
+    }
+    // type-specific controls only show where they apply
+    const isKraam = params.type === 'kraam', sideType = params.type === 'kraam' || params.type === 'dwarshuis';
+    for (const k of ['seller', 'sign', 'signText']) ctlEls[k].wrap.hidden = !isKraam;
+    ctlEls.balcony.wrap.hidden = sideType;
+    if (r.seller && params.seller === 'willekeurig') { const h = $('c_seller_h'); h.innerHTML = ''; h.append('Chosen: '); const b = document.createElement('b'); b.textContent = nm(r.seller); h.appendChild(b); }
+    const ws = ctlEls.windowStyle.wrap;
+    ws.style.opacity = params.windowMix === 'gemengd' ? '0.5' : '';
+    $('c_windowStyle_h').textContent = params.windowMix === 'gemengd' ? 'Each wall gets its own window style.' : $('c_windowStyle_h').textContent;
+  }
+
+  $('btnSurprise').addEventListener('click', () => {
+    const keep = { t: params.t, ih: params.ih, lw: params.lw, bed: params.bed, joints: params.joints, clear: params.clear, type: params.type, signText: params.signText };
+    params = GB.randomParams(1 + Math.floor(Math.random() * 999998), keep);
+    syncControls(); rebuild(true);
+  });
+  $('btnVariant').addEventListener('click', () => { params.seed = 1 + Math.floor(Math.random() * 999998); syncControls(); rebuild(); });
+  $('seed').addEventListener('change', e => { const v = Math.max(1, Math.min(999999, Math.round(Number(e.target.value) || 1))); params.seed = v; e.target.value = v; rebuild(); });
+
+  // ---------------------------------------------------------------- 3D stage
+  const stage = $('stage');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  stage.insertBefore(renderer.domElement, stage.firstChild);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1.6, 1, 5000);
+  camera.up.set(0, 0, 1);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a6a55, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(-120, -200, 260); scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffe8d6, 0.25); fill.position.set(200, 150, 80); scene.add(fill);
+  const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const matPlate = new THREE.MeshStandardMaterial({ color: 0xb8692e, roughness: 0.82, metalness: 0 });
+  const matIcing = new THREE.MeshStandardMaterial({ color: 0xfbfaf7, roughness: 0.55, metalness: 0 });
+  let group = new THREE.Group(); scene.add(group);
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage);
+  (function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+
+  function showHouse(resetCam) {
+    scene.remove(group);
+    group.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+    group = new THREE.Group();
+    const lay = view === 'print' ? GB.layout(house.parts, params.bed) : null;
+    for (const pt of house.parts) {
+      const F = lay ? lay.frames[pt.id] : pt.place;
+      const m = GB.meshPart(pt, F);
+      for (const [arr, mat] of [[m.plaat, matPlate], [m.glazuur, matIcing]]) {
+        if (!arr.length) continue;
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+        g.computeVertexNormals();
+        group.add(new THREE.Mesh(g, mat));
+      }
+    }
+    scene.add(group);
+    if (resetCam) {
+      const box = new THREE.Box3().setFromObject(group), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3());
+      const r = Math.max(s.x, s.y, s.z);
+      controls.target.copy(c);
+      if (view === 'print') camera.position.set(c.x, c.y - r * 0.9, c.z + r * 1.5);
+      else camera.position.set(c.x - r * 1.05, c.y - r * 1.55, c.z + r * 0.85);
+      camera.near = r / 100; camera.far = r * 20; camera.updateProjectionMatrix();
+    }
+  }
+  for (const [btn, v] of [['vAsm', 'asm'], ['vPrint', 'print']]) {
+    $(btn).addEventListener('click', () => {
+      view = v; $('vAsm').setAttribute('aria-pressed', v === 'asm'); $('vPrint').setAttribute('aria-pressed', v === 'print');
+      if (house) showHouse(true);
+    });
+  }
+
+  // ---------------------------------------------------------------- build
+  let timer = null;
+  function schedule() { clearTimeout(timer); timer = setTimeout(() => rebuild(false), 180); }
+  function rebuild(resetCam) {
+    $('status').textContent = 'Baking\u2026';
+    setTimeout(() => {
+      const t0 = performance.now();
+      try {
+        house = GB.build(params);
+      } catch (e) {
+        console.error(e);
+        $('status').textContent = 'This combination does not work. Try another seed or size.';
+        return;
+      }
+      showHouse(resetCam || firstFrame);
+      firstFrame = false;
+      renderParts(); renderChips(); syncHints();
+      $('hintZ').textContent = fmt(params.t, 0.1) + ' mm';
+      $('status').textContent = `${house.parts.length} parts \u00b7 ${Math.round(performance.now() - t0)} ms`;
+    }, 20);
+  }
+  function renderChips() {
+    const r = house.resolved, d = house.dims, el = $('chips');
+    el.innerHTML = '';
+    const add = (k, v) => { const s = document.createElement('span'); s.className = 'chip'; const i = document.createElement('i'); i.textContent = k; s.append(i, v); el.appendChild(s); };
+    add('building', GB.TYPES[r.type].name);
+    add('gable', r.gable === 'klok' ? 'Bell gable' : nm(r.gable)); add('door', nm(r.door) + ' \u00b7 ' + nm(r.doorPos).toLowerCase());
+    if (r.extraDoor !== 'geen') add('extra', nm(r.extraDoor));
+    add('roof', r.roofPattern === 'geen' ? 'Plain' : nm(r.roofPattern));
+    add('eaves', r.roofEdge === 'golf' ? 'Wavy' : nm(r.roofEdge));
+    add('border', nm(r.border));
+    add('size', `${d.Fx} \u00d7 ${d.Fy} \u00d7 ${Math.round(d.Hp + params.t)} mm`);
+    add('base', `${Math.round(d.Bw)} \u00d7 ${Math.round(d.Bd)} mm`);
+  }
+  const svgColors = () => ({ plaat: cssVar('--ginger') || '#b8692e', glazuur: '#ffffff', rand: '#6b3a17' });
+  function renderParts() {
+    const el = $('parts');
+    el.innerHTML = '';
+    for (const pt of house.parts) {
+      const card = document.createElement('div'); card.className = 'part';
+      const th = document.createElement('div'); th.className = 'thumb'; th.innerHTML = GB.toSVG(pt, svgColors());
+      const sv = th.querySelector('svg'); sv.removeAttribute('width'); sv.removeAttribute('height'); sv.setAttribute('role', 'img'); sv.setAttribute('aria-label', pt.name);
+      const h = document.createElement('h3'); h.textContent = pt.name;
+      const b = pt.bbox, dm = document.createElement('div'); dm.className = 'dims';
+      dm.textContent = `${(b[2] - b[0]).toFixed(1)} \u00d7 ${(b[3] - b[1]).toFixed(1)} mm`;
+      const btns = document.createElement('div'); btns.className = 'btns';
+      const bz = document.createElement('button'); bz.type = 'button'; bz.className = 'small'; bz.textContent = '.zip';
+      bz.title = 'STEP, STL, DXF and SVG of this part';
+      bz.addEventListener('click', () => zipPart(pt));
+      const bs = document.createElement('button'); bs.type = 'button'; bs.className = 'small'; bs.textContent = '.svg';
+      bs.addEventListener('click', () => save(pt.id + '.svg', GB.toSVG(pt)));
+      btns.append(bz, bs);
+      card.append(th, h, dm, btns);
+      el.appendChild(card);
+    }
+  }
+
+  // ---------------------------------------------------------------- downloads
+  let downloads = null;
+  if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { downloads = d; }).catch(() => {});
+  const toastEl = $('toast');
+  let toastT = null;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2600); }
+  async function save(filename, data) {
+    if (downloads) {
+      try { await downloads.save({ filename, data }); toast('Saved: ' + filename); }
+      catch (e) {
+        const code = e && e.code;
+        if (code === 'declined') toast('Download cancelled');
+        else if (code === 'rate_limited') toast('A download is already waiting for confirmation');
+        else toast('Saving does not work here. Open the page in claude.ai.');
+      }
+      return;
+    }
+    if (window.claude) { toast('Downloads are not available in this view.'); return; }
+    const blob = data instanceof Blob ? data : new Blob([data]);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
+  const README = () => [
+    'GINGERBREAD HOUSE - made with the Gingerbread House Builder',
+    '',
+    `Seed ${params.seed}. Sizes in millimetres. Plate thickness ${params.t} mm, icing ${params.ih} mm high, line width ${params.lw} mm.`,
+    '',
+    'FOLDERS',
+    '  step/  Solids with exact faces. Plate and icing are separate bodies (in Fusion: Combine > Join to merge them).',
+    '  stl/   One per part, ready to print (plate below, icing on top).',
+    '  dxf/   2D sketches with layer PLATE and layer ICING. Fusion: Insert > Insert DXF, "one sketch per layer".',
+    '  svg/   The same drawing as SVG (handy for Inkscape or a laser cutter).',
+    '  print_plate.stl  All parts laid out flat.',
+    '  assembled.stl    The building put together, to look at.',
+    '  settings.json    All settings. Load this file in the builder with "Load settings" to get exactly the same building back.',
+    '',
+    'JOINTS',
+    params.joints
+      ? `  Tabs and slots like the original kit: tabs stick out ${(params.t - 0.1).toFixed(1)} mm, slots are ${params.clear} mm wider per side (${(2 * params.clear).toFixed(2)} mm in total).`
+      : '  Switched off: glue the parts together with icing.',
+    '  Walls -> gables, gables -> base plate, gables -> roof (gable roof) or roof -> gables (stepped and bell gables), garden figures -> base plate.',
+    '  Chimney -> roof: the tab under the chimney goes through a slot in the right roof half; there is no icing there.',
+    '  Sign -> roof (stall): the legs go through notches at the ridge, with extra play (0.25 mm per side).',
+    '',
+    'PRINTING TIP',
+    `  Two colours: change filament at ${params.t} mm (brown for the gingerbread, white for the icing).`,
+    '  The roof plates are bevelled at the ridge so the two halves meet neatly.',
+    '',
+  ].join('\r\n');
+  function partFiles(z, pt, prefix) {
+    const m = GB.meshPart(pt);
+    z.file((prefix ? 'step/' : '') + pt.id + '.step', GB.toSTEP(pt));
+    z.file((prefix ? 'stl/' : '') + pt.id + '.stl', GB.toSTL([m.plaat, m.glazuur], pt.id));
+    z.file((prefix ? 'dxf/' : '') + pt.id + '.dxf', GB.toDXF(pt));
+    z.file((prefix ? 'svg/' : '') + pt.id + '.svg', GB.toSVG(pt));
+  }
+  async function zipPart(pt) {
+    const z = new JSZip();
+    partFiles(z, pt, false);
+    save(`gingerbread_${params.seed}_${pt.id}.zip`, await z.generateAsync({ type: 'blob', compression: 'DEFLATE' }));
+  }
+  // ---------------------------------------------------------------- settings file (instellingen.json)
+  // Accepts the file from the zip ({ params, gekozen }) or a plain object of settings. Only known
+  // settings with the right kind of value are taken over; anything else is ignored.
+  function applySettings(obj) {
+    const src = obj && typeof obj === 'object' && obj.params && typeof obj.params === 'object' ? obj.params : obj;
+    if (!src || typeof src !== 'object') throw new Error('no settings found');
+    const next = Object.assign({}, GB.DEFAULTS);
+    let n = 0;
+    for (const k of Object.keys(GB.DEFAULTS)) {
+      if (!(k in src)) continue;
+      const v = src[k], d = GB.DEFAULTS[k];
+      if (typeof d === 'number' && typeof v === 'number' && isFinite(v)) { next[k] = v; n++; }
+      else if (typeof d === 'boolean' && typeof v === 'boolean') { next[k] = v; n++; }
+      else if (typeof d === 'string' && typeof v === 'string' && v.length <= 40) { next[k] = v; n++; }
+    }
+    if (!n) throw new Error('no known settings in this file');
+    if (!GB.TYPES[next.type]) next.type = 'huis';
+    params = next;
+    syncControls(); rebuild(true);
+    return n;
+  }
+  $('btnLoad').addEventListener('click', () => $('fileLoad').click());
+  $('fileLoad').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    try {
+      const n = applySettings(JSON.parse(await f.text()));
+      toast(`Settings loaded (${n} values, seed ${params.seed})`);
+    } catch (err) {
+      toast('This file could not be loaded: ' + (err && err.message ? err.message : 'invalid JSON'));
+    }
+  });
+  $('btnSaveSet').addEventListener('click', () => {
+    save(`settings_${params.type}_${params.seed}.json`, JSON.stringify({ params, resolved: house ? house.resolved : {} }, (k, v) => (k === 'treeSpots' || k === 'roofSlotZone' ? undefined : v), 2));
+  });
+
+  $('btnZip').addEventListener('click', async () => {
+    if (!house) return;
+    const btn = $('btnZip'); btn.disabled = true; btn.textContent = 'Packing\u2026';
+    try {
+      const z = new JSZip(), lay = GB.layout(house.parts, params.bed), flat = [], asm = [];
+      for (const pt of house.parts) {
+        partFiles(z, pt, true);
+        const a = GB.meshPart(pt, lay.frames[pt.id]); flat.push(a.plaat, a.glazuur);
+        const b = GB.meshPart(pt, pt.place); asm.push(b.plaat, b.glazuur);
+      }
+      z.file('print_plate.stl', GB.toSTL(flat, 'print plate'));
+      z.file('assembled.stl', GB.toSTL(asm, 'assembled'));
+      z.file('settings.json', JSON.stringify({ params, resolved: house.resolved }, (k, v) => (k === 'treeSpots' || k === 'roofSlotZone' ? undefined : v), 2));
+      z.file('README.txt', README());
+      await save(`gingerbread_${params.type}_${params.seed}.zip`, await z.generateAsync({ type: 'blob', compression: 'DEFLATE' }));
+    } finally { btn.disabled = false; btn.textContent = 'Download everything (.zip)'; }
+  });
+
+  // ---------------------------------------------------------------- sign text: script font -> outlines in mm
+  // The text is drawn on a hidden canvas, the pixel boundary is followed into closed loops, smoothed,
+  // simplified and turned into polygons (even-odd, so letter counters stay open).
+  const SIGN_FONT = '"Pacifico", "Segoe Script", "Brush Script MT", cursive';
+  function traceText(text, maxW, maxH) {
+    const PX = 14;                                            // pixels per mm
+    const cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+    let fs = maxH * PX;
+    const measure = () => { ctx.font = `${fs}px ${SIGN_FONT}`; return ctx.measureText(text); };
+    let mt = measure();
+    const fit = () => {
+      const w = mt.actualBoundingBoxRight + mt.actualBoundingBoxLeft, h = mt.actualBoundingBoxAscent + mt.actualBoundingBoxDescent;
+      return Math.min(maxW * PX / Math.max(w, 1), maxH * PX / Math.max(h, 1));
+    };
+    fs *= fit(); mt = measure(); fs *= Math.min(1, fit()); mt = measure();
+    const w = Math.ceil(mt.actualBoundingBoxRight + mt.actualBoundingBoxLeft) + 8;
+    const h = Math.ceil(mt.actualBoundingBoxAscent + mt.actualBoundingBoxDescent) + 8;
+    cv.width = w; cv.height = h;
+    ctx.font = `${fs}px ${SIGN_FONT}`; ctx.fillStyle = '#000';
+    ctx.fillText(text, 4 + mt.actualBoundingBoxLeft, 4 + mt.actualBoundingBoxAscent);
+    const data = ctx.getImageData(0, 0, w, h).data;
+    const on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && data[(y * w + x) * 4 + 3] > 127;
+    // directed boundary edges around filled pixels (clockwise in image coordinates)
+    const next = new Map(), key = (x, y) => x * 100003 + y;
+    const addE = (x0, y0, x1, y1) => { const k = key(x0, y0); if (!next.has(k)) next.set(k, []); next.get(k).push([x1, y1]); };
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (!on(x, y)) continue;
+      if (!on(x, y - 1)) addE(x, y, x + 1, y);
+      if (!on(x + 1, y)) addE(x + 1, y, x + 1, y + 1);
+      if (!on(x, y + 1)) addE(x + 1, y + 1, x, y + 1);
+      if (!on(x - 1, y)) addE(x, y + 1, x, y);
+    }
+    const loops = [];
+    for (const [k0, outs] of next) {
+      while (outs.length) {
+        const start = [Math.floor(k0 / 100003), k0 % 100003], loop = [start];
+        let cur = outs.pop();
+        let guard = 0;
+        let prev = start;
+        while (guard++ < 200000) {
+          if (cur[0] === start[0] && cur[1] === start[1]) break;
+          loop.push(cur);
+          const o = next.get(key(cur[0], cur[1]));
+          if (!o || !o.length) break;
+          // where two diagonal pixels touch there are two ways on: always take the right-hand turn,
+          // so loops never cross each other
+          let pick = o.length - 1;
+          if (o.length > 1) {
+            const dx = cur[0] - prev[0], dy = cur[1] - prev[1];
+            const ri = o.findIndex(q => (q[0] - cur[0]) === -dy && (q[1] - cur[1]) === dx);
+            if (ri >= 0) pick = ri;
+          }
+          prev = cur;
+          cur = o.splice(pick, 1)[0];
+        }
+        if (loop.length >= 4) loops.push(loop);
+      }
+    }
+    // smooth the pixel staircase (edge midpoints), simplify, convert to mm (y up, centred)
+    const rdp = (pts, tol) => {
+      if (pts.length < 3) return pts;
+      const a = pts[0], b = pts[pts.length - 1];
+      let idx = -1, dmax = 0;
+      const L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1e-9;
+      for (let i = 1; i < pts.length - 1; i++) {
+        const d = Math.abs((pts[i][0] - a[0]) * (b[1] - a[1]) - (pts[i][1] - a[1]) * (b[0] - a[0])) / L;
+        if (d > dmax) { dmax = d; idx = i; }
+      }
+      if (dmax <= tol) return [a, b];
+      return rdp(pts.slice(0, idx + 1), tol).slice(0, -1).concat(rdp(pts.slice(idx), tol));
+    };
+    const geoms = [];
+    for (const lp of loops) {
+      const mid = lp.map((q, i) => { const r = lp[(i + 1) % lp.length]; return [(q[0] + r[0]) / 2, (q[1] + r[1]) / 2]; });
+      // closed loop: split at the point farthest from the start, simplify both halves
+      let far = 0, fd = -1;
+      mid.forEach((q, i) => { const d = Math.hypot(q[0] - mid[0][0], q[1] - mid[0][1]); if (d > fd) { fd = d; far = i; } });
+      let pts = rdp(mid.slice(0, far + 1), 0.45).slice(0, -1).concat(rdp(mid.slice(far).concat([mid[0]]), 0.45).slice(0, -1));
+      if (pts.length < 3) continue;
+      pts = pts.map(q => [(q[0] - w / 2) / PX, -(q[1] - h / 2) / PX]);
+      geoms.push([[...pts, pts[0]]]);
+    }
+    if (!geoms.length) return null;
+    try { return polygonClipping.xor(...geoms); } catch (e) { console.warn('sign text could not be traced', e); return null; }
+  }
+  GB.setTextRenderer((text, maxW, maxH) => {
+    try { return traceText(text, maxW, maxH); } catch (e) { console.warn('sign text failed', e); return null; }
+  });
+  // once the script font has arrived, redraw a stall so its sign uses it
+  if (document.fonts && document.fonts.load) document.fonts.load(`40px ${SIGN_FONT}`).then(() => { if (params.type === 'kraam') rebuild(false); }).catch(() => {});
+
+  syncControls();
+  rebuild(true);
+})();
+</script>
+</body>
+</html>
