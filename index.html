@@ -212,7 +212,7 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="gen.js"></script>
+<script src="gen.js?v=3"></script><!-- bump v= whenever gen.js changes, so browsers never mix a new page with a cached old gen.js -->
 <script>
 (function () {
   'use strict';
@@ -519,7 +519,7 @@ legend { float: left; width: 100%; font-family: var(--f-display); font-weight: 6
       // laser: the cut edges come out scorched, so the plate's side walls get their own dark material
       const m = GB.meshPart(pt, F, isLaser());
       for (const [arr, mat] of [[m.plaat, matPlate], [m.glazuur, matIcing], [m.zijkant, matBurnt]]) {
-        if (!arr.length) continue;
+        if (!arr || !arr.length) continue;
         const g = new THREE.BufferGeometry();
         g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
         g.computeVertexNormals();
